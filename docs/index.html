@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ALICE Choropleth Joiner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>ALICE CSV ↔ GeoJSON Joiner</h1>
+      <p>Fully local: drop a boundary GeoJSON and an ALICE CSV to produce a joined GeoJSON for ArcGIS.</p>
+
+      <section class="panel">
+        <label class="file">Boundary GeoJSON
+          <input type="file" id="boundaryFile" accept="application/geo+json,application/json,.geojson" />
+        </label>
+        <label class="file">ALICE CSV
+          <input type="file" id="dataFile" accept="text/csv,.csv" />
+        </label>
+
+        <div class="row">
+          <label>Level
+            <select id="level">
+              <option value="place">Place</option>
+              <option value="subcounty">Sub-County</option>
+              <option value="zcta">ZCTA / ZIP</option>
+            </select>
+          </label>
+
+          <label>State (STUSPS)
+            <input type="text" id="state" maxlength="2" placeholder="FL" />
+          </label>
+        </div>
+
+        <button id="joinBtn">Join and Download GeoJSON</button>
+        <div id="status"></div>
+      </section>
+
+      <section class="panel small">
+        <h3>Notes</h3>
+        <ul>
+          <li>Boundary must be GeoJSON (export via the CLI or your cache).</li>
+          <li>Joins:
+            <ul>
+              <li>Place: feature.properties.GEOID ↔ CSV.GEOID (7 digits)</li>
+              <li>Sub-County: feature.properties.GEOID ↔ CSV.GEOID (10 digits)</li>
+              <li>ZCTA: feature.properties.GEOID20/ZCTA5CE20 ↔ CSV.ZIP (5 digits)</li>
+            </ul>
+          </li>
+          <li>Computed metrics are added: Below_ALICE_Rate, ALICE_Rate, Poverty_Rate.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+  </html>
+
