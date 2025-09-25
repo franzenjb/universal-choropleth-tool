@@ -92,7 +92,13 @@ el('go').addEventListener('click', async ()=>{
     const featCount = (result && result.features) ? result.features.length : 0;
     const btn = document.getElementById('previewBtn');
     const note = document.getElementById('previewNote');
-    btn.disabled = false;
+    if (level === 'zcta') {
+      // Disable preview for ZIPs to avoid confusion; download is valid
+      btn.disabled = true;
+      note.textContent = 'ZIP preview is disabled here. Your Download GeoJSON is ready and valid for ArcGIS.';
+    } else {
+      btn.disabled = false;
+    }
     if (featCount > 8000) {
       note.textContent = `Large layer (${featCount} features). Preview may be slow.`;
     } else {
