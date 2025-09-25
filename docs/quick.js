@@ -42,6 +42,10 @@ el('go').addEventListener('click', async ()=>{
     const fd = new FormData();
     fd.append('state', st);
     fd.append('level', level);
+    // Simplify option
+    const simpOn = document.getElementById('simplifyChk').checked;
+    const tol = parseFloat(document.getElementById('simplifyTol').value || '0');
+    if (simpOn && tol > 0) fd.append('simplify', String(tol));
     fd.append('csv', f);
     const r = await fetch(localAPI.base+'/join', { method:'POST', body:fd });
     if (!r.ok) throw new Error('Join failed');

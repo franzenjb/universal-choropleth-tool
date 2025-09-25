@@ -42,6 +42,18 @@
           </label>
         </div>
 
+        <div class="controls" style="margin-top:8px; align-items:center;">
+          <label style="grid-column: span 2; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="simplifyChk" /> Simplify geometry (smaller, faster)
+            <select id="simplifyTol" style="max-width:180px;">
+              <option value="0.0005">0.0005 (recommended)</option>
+              <option value="0.001">0.001</option>
+              <option value="0.0002">0.0002</option>
+              <option value="0">No simplify</option>
+            </select>
+          </label>
+        </div>
+
         <div class="actions">
           <button id="go">Create My Map</button>
         </div>
