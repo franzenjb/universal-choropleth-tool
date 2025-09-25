@@ -59,11 +59,14 @@ el('go').addEventListener('click', async ()=>{
       const rows = parseCSV(text);
       msg.textContent = 'Joining…';
       const { geojson } = joinFeatures(gj, rows, level, st);
-      result = geojson;
+      // Basic validation + cleanup
+      const cleaned = sanitizeGeoJSON(geojson);
+      if (!cleaned) { msg.textContent = 'Error: Invalid GeoJSON after join.'; return; }
+      result = cleaned;
       msg.textContent = 'Map ready.';
       el('after').style.display='block';
       document.getElementById('previewBtn').disabled = false;
-      renderPreview();
+      // Defer preview to button to avoid errors breaking flow
       return;
     } catch (e) {
       msg.textContent = 'Error (browser mode): ' + (e?.message||String(e));
@@ -127,20 +130,25 @@ function renderPreview(){
   }
   if (layer) { layer.remove(); }
   const { styleFn, legend } = styleFor(result);
-  layer = L.geoJSON(result, { style: styleFn, onEachFeature: (f, l)=>{
-    const p = f.properties||{};
-    const name = p['GEO display_label']||p['NAME']||p['NAMELSAD']||p['ZCTA5CE10']||p['ZCTA5CE20']||'';
-    const hh = p['Households'];
-    const below = p['Below_ALICE_Rate'];
-    const pr = p['Poverty_Rate'];
-    const ar = p['ALICE_Rate'];
-    const fmt = n => (n==null||isNaN(n))?'-':(Math.round(n*1000)/10)+'%';
-    l.bindTooltip(`<b>${name}</b><br>`+
-      (below!=null?`Below ALICE: ${fmt(below)}<br>`:'')+
-      (ar!=null?`ALICE: ${fmt(ar)}<br>`:'')+
-      (pr!=null?`Poverty: ${fmt(pr)}<br>`:'')+
-      (hh!=null?`Households: ${hh}`:''));
-  }}).addTo(map);
+  try {
+    layer = L.geoJSON(result, { style: styleFn, onEachFeature: (f, l)=>{
+      const p = f.properties||{};
+      const name = p['GEO display_label']||p['NAME']||p['NAMELSAD']||p['ZCTA5CE10']||p['ZCTA5CE20']||'';
+      const hh = p['Households'];
+      const below = p['Below_ALICE_Rate'];
+      const pr = p['Poverty_Rate'];
+      const ar = p['ALICE_Rate'];
+      const fmt = n => (n==null||isNaN(n))?'-':(Math.round(n*1000)/10)+'%';
+      l.bindTooltip(`<b>${name}</b><br>`+
+        (below!=null?`Below ALICE: ${fmt(below)}<br>`:'')+
+        (ar!=null?`ALICE: ${fmt(ar)}<br>`:'')+
+        (pr!=null?`Poverty: ${fmt(pr)}<br>`:'')+
+        (hh!=null?`Households: ${hh}`:''));
+    }}).addTo(map);
+  } catch (e) {
+    document.getElementById('previewNote').textContent = 'Preview failed: ' + (e?.message||String(e)) + '. You can still download the GeoJSON.';
+    return;
+  }
   try { map.fitBounds(layer.getBounds(), { padding: [20,20] }); } catch {}
   // Legend
   addLegend(legend);
@@ -182,4 +190,19 @@ function addLegend(legend){
     return div;
   };
   legendControl.addTo(map);
+}
+
+// Remove features with empty/invalid geometry; ensure FeatureCollection structure
+function sanitizeGeoJSON(gj){
+  try {
+    if (!gj || gj.type !== 'FeatureCollection' || !Array.isArray(gj.features)) return null;
+    const cleaned = { type: 'FeatureCollection', features: [] };
+    for (const f of gj.features) {
+      if (!f || f.type !== 'Feature' || !f.geometry) continue;
+      const g = f.geometry;
+      if (!g.type || !g.coordinates) continue;
+      cleaned.features.push(f);
+    }
+    return cleaned.features.length ? cleaned : null;
+  } catch { return null; }
 }
