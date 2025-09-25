@@ -1,0 +1,11 @@
+ZIP_Code,City,County,Violent_Crime_Rate,Property_Crime_Rate,Total_Incidents,Safety_Index,Year
+60601,Chicago,Cook,45.2,234.5,1234,25,2023
+60602,Chicago,Cook,38.7,198.3,987,32,2023
+60605,Chicago,Cook,52.3,267.8,1567,18,2023
+60007,Elk Grove Village,Cook,8.4,45.6,234,78,2023
+60016,Des Plaines,Cook,12.3,67.8,345,65,2023
+60201,Evanston,Cook,15.6,89.2,456,58,2023
+60301,Oak Park,Cook,18.9,92.3,523,54,2023
+60462,Orland Park,Cook,6.7,38.9,189,82,2023
+60540,Naperville,DuPage,4.5,28.7,145,89,2023
+60187,Wheaton,DuPage,5.8,32.4,167,85,2023

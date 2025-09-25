@@ -337,8 +337,9 @@
             <div class="control-group">
                 <label>Geographic Level</label>
                 <select id="geoLevel">
-                    <option value="zcta">ZIP Codes (ZCTA)</option>
+                    <option value="state">States</option>
                     <option value="county">Counties</option>
+                    <option value="zcta">ZIP Codes (ZCTA)</option>
                     <option value="place">Cities/Places</option>
                     <option value="tract">Census Tracts</option>
                     <option value="bg">Block Groups</option>
@@ -501,6 +502,35 @@
         
         // Populate states
         const stateSelect = document.getElementById('stateSelect');
+        
+        // Add United States option first for state-level data
+        const usOption = document.createElement('option');
+        usOption.value = 'US';
+        usOption.textContent = '🇺🇸 United States (All States)';
+        stateSelect.appendChild(usOption);
+        
+        // Add regional options
+        const regions = {
+            'NORTHEAST': '🌐 Northeast (CT, MA, ME, NH, NJ, NY, PA, RI, VT)',
+            'MIDWEST': '🌾 Midwest (IL, IN, IA, KS, MI, MN, MO, NE, ND, OH, SD, WI)',
+            'SOUTH': '🌴 South (AL, AR, DE, FL, GA, KY, LA, MD, MS, NC, OK, SC, TN, TX, VA, WV)',
+            'WEST': '🏔️ West (AZ, CA, CO, ID, MT, NV, NM, OR, UT, WA, WY)'
+        };
+        
+        for (const [value, text] of Object.entries(regions)) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = text;
+            stateSelect.appendChild(option);
+        }
+        
+        // Add divider
+        const divider = document.createElement('option');
+        divider.disabled = true;
+        divider.textContent = '─────────────────';
+        stateSelect.appendChild(divider);
+        
+        // Add individual states
         for (const [abbr, name] of Object.entries(STATES)) {
             const option = document.createElement('option');
             option.value = abbr;
@@ -645,7 +675,52 @@
             document.getElementById('createMapBtn').disabled = !ready;
         }
         
-        stateSelect.addEventListener('change', checkReady);
+        // Handle state selection changes
+        stateSelect.addEventListener('change', () => {
+            const geoLevel = document.getElementById('geoLevel');
+            const selectedValue = stateSelect.value;
+            
+            if (selectedValue === 'US') {
+                // For United States, default to state-level visualization
+                geoLevel.value = 'state';
+                
+                Array.from(geoLevel.options).forEach(option => {
+                    if (option.value === 'state') {
+                        option.disabled = false;
+                        option.textContent = 'States (Recommended for US data)';
+                    } else if (option.value === 'county') {
+                        option.disabled = false;
+                        option.textContent = 'Counties (All US Counties)';
+                    } else {
+                        option.disabled = true;
+                    }
+                });
+            } else if (['NORTHEAST', 'MIDWEST', 'SOUTH', 'WEST'].includes(selectedValue)) {
+                // For regions, enable appropriate levels
+                Array.from(geoLevel.options).forEach(option => {
+                    option.disabled = false;
+                    if (option.value === 'state') {
+                        option.textContent = `States in ${selectedValue.charAt(0) + selectedValue.slice(1).toLowerCase()}`;
+                    } else if (option.value === 'county') {
+                        option.textContent = `Counties in ${selectedValue.charAt(0) + selectedValue.slice(1).toLowerCase()}`;
+                    } else if (option.value === 'zcta') {
+                        option.textContent = `ZIP Codes in ${selectedValue.charAt(0) + selectedValue.slice(1).toLowerCase()}`;
+                    }
+                });
+            } else if (selectedValue) {
+                // For individual states, enable all options
+                Array.from(geoLevel.options).forEach(option => {
+                    option.disabled = false;
+                    // Reset text
+                    if (option.value === 'state') option.textContent = 'States';
+                    if (option.value === 'county') option.textContent = 'Counties';
+                    if (option.value === 'zcta') option.textContent = 'ZIP Codes (ZCTA)';
+                });
+            }
+            
+            checkReady();
+        });
+        
         document.getElementById('geoLevel').addEventListener('change', checkReady);
         
         // Create map
@@ -657,9 +732,28 @@
                     // Use local API
                     const formData = new FormData();
                     formData.append('csv', csvFile);
-                    formData.append('state', stateSelect.value);
-                    formData.append('level', document.getElementById('geoLevel').value);
-                    formData.append('simplify', '0.0005');
+                    
+                    // Handle different selection types
+                    const selectedValue = stateSelect.value;
+                    const geoLevel = document.getElementById('geoLevel').value;
+                    
+                    if (selectedValue === 'US' || ['NORTHEAST', 'MIDWEST', 'SOUTH', 'WEST'].includes(selectedValue)) {
+                        // For US or regions, pass special parameter
+                        formData.append('state', selectedValue);
+                        formData.append('level', geoLevel);
+                        
+                        // Use less simplification for state-level to preserve shapes
+                        if (geoLevel === 'state') {
+                            formData.append('simplify', '0.001');
+                        } else {
+                            formData.append('simplify', '0.0005');
+                        }
+                    } else {
+                        // Individual state
+                        formData.append('state', selectedValue);
+                        formData.append('level', geoLevel);
+                        formData.append('simplify', '0.0005');
+                    }
                     
                     const response = await fetch(`${localAPI}/join`, {
                         method: 'POST',

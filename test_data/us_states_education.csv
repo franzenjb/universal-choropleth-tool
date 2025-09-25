@@ -1,0 +1,11 @@
+State_FIPS,State_Name,State_Abbr,High_School_Graduation_Rate,College_Enrollment_Rate,Bachelor_Degree_Percent,Advanced_Degree_Percent,Student_Teacher_Ratio,Education_Spending_Per_Student
+01,Alabama,AL,87.2,62.3,25.5,10.1,18.4,9456
+04,Arizona,AZ,78.5,58.7,29.5,11.3,23.5,8234
+06,California,CA,83.1,66.8,34.2,13.4,22.7,13567
+08,Colorado,CO,90.7,68.4,41.2,15.6,17.2,11234
+09,Connecticut,CT,88.6,72.3,39.8,17.9,13.2,19876
+12,Florida,FL,86.9,61.2,30.5,11.8,17.8,9678
+13,Georgia,GA,85.4,63.5,31.3,12.4,15.3,10234
+17,Illinois,IL,88.2,69.7,34.7,13.9,15.8,14567
+25,Massachusetts,MA,91.3,75.8,43.7,19.8,13.5,18234
+36,New York,NY,86.5,70.2,37.5,16.2,12.9,23456
