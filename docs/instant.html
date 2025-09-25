@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instant Choropleth Maps - See It Now!</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://js.arcgis.com/4.28/"></script>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            height: calc(100vh - 140px);
+        }
+        .sidebar {
+            background: white;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .map-container {
+            position: relative;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .upload-zone:hover {
+            background: #f8f6ff;
+            border-color: #764ba2;
+        }
+        .upload-zone.has-file {
+            border-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .control-group {
+            margin: 20px 0;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .geo-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .geo-btn {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .geo-btn:hover {
+            border-color: #667eea;
+            background: #f8f6ff;
+        }
+        .geo-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 0;
+        }
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .action-btn.secondary {
+            background: #4caf50;
+        }
+        .action-btn.arcgis {
+            background: linear-gradient(135deg, #0079c1 0%, #004575 100%);
+        }
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .status.info { background: #e3f2fd; color: #1976d2; }
+        .status.success { background: #e8f5e9; color: #388e3c; }
+        .status.error { background: #ffebee; color: #c62828; }
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .legend h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border: 1px solid #ddd;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #arcgisView {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        .column-selector {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .column-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .column-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .column-item:hover {
+            border-color: #667eea;
+            background: #f8f6ff;
+        }
+        .column-item.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ Instant Choropleth Maps</h1>
+        <div class="subtitle">See your map instantly • No downloads • No waiting</div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="upload-zone" id="uploadZone">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <p style="margin: 10px 0; font-weight: 600;">Drop CSV here</p>
+                <p style="font-size: 12px; color: #666;">or click to browse</p>
+                <input type="file" id="csvInput" accept=".csv" style="display: none;">
+            </div>
+
+            <div id="setupPanel" style="display: none;">
+                <div class="control-group">
+                    <label>State</label>
+                    <select id="stateSelect">
+                        <option value="">Select state...</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Geographic Level</label>
+                    <div class="geo-buttons">
+                        <button class="geo-btn" data-level="zcta">ZIP Codes</button>
+                        <button class="geo-btn" data-level="county">Counties</button>
+                        <button class="geo-btn" data-level="place">Cities</button>
+                        <button class="geo-btn" data-level="tract">Tracts</button>
+                    </div>
+                </div>
+
+                <div class="column-selector" id="columnSelector" style="display: none;">
+                    <label style="font-weight: 600;">Select Value Column to Map</label>
+                    <p style="font-size: 12px; color: #666; margin: 5px 0;">Choose which data column to visualize</p>
+                    <div class="column-list" id="columnList"></div>
+                </div>
+
+                <button class="action-btn" id="createBtn" disabled>
+                    ⚡ Create Instant Map
+                </button>
+
+                <div id="status"></div>
+
+                <div id="resultActions" style="display: none;">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="leaflet">Interactive Map</button>
+                        <button class="tab" data-tab="arcgis">ArcGIS View</button>
+                    </div>
+
+                    <div class="tab-content active" data-content="leaflet">
+                        <p style="font-size: 14px; color: #666; margin: 10px 0;">
+                            Your map is ready! Pan, zoom, and click features to see data.
+                        </p>
+                        <button class="action-btn secondary" id="downloadBtn">
+                            ⬇️ Download GeoJSON
+                        </button>
+                    </div>
+
+                    <div class="tab-content" data-content="arcgis">
+                        <div class="control-group">
+                            <label>ArcGIS Online Options</label>
+                            <button class="action-btn arcgis" id="arcgisLoginBtn">
+                                🔐 Login to ArcGIS
+                            </button>
+                            <button class="action-btn arcgis" id="publishBtn" disabled>
+                                📤 Publish to My Maps
+                            </button>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                            Or use the free public viewer below
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            <div id="arcgisView"></div>
+            <div class="legend" id="legend" style="display: none;">
+                <h3>Legend</h3>
+                <div id="legendItems"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State data
+        const STATES = {
+            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 
+            'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware',
+            'DC': 'District of Columbia', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii',
+            'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas',
+            'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi',
+            'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada',
+            'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+            'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma',
+            'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah',
+            'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia',
+            'WI': 'Wisconsin', 'WY': 'Wyoming'
+        };
+
+        let csvFile = null;
+        let csvData = null;
+        let selectedLevel = null;
+        let selectedColumn = null;
+        let resultGeoJSON = null;
+        let map = null;
+        let currentLayer = null;
+        let localAPI = null;
+
+        // Initialize Leaflet map
+        map = L.map('map').setView([39.8283, -98.5795], 4);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Check for local API
+        async function checkAPI() {
+            try {
+                const response = await fetch('http://127.0.0.1:8765/health');
+                if (response.ok) {
+                    localAPI = 'http://127.0.0.1:8765';
+                    showStatus('Local engine connected', 'success');
+                }
+            } catch (e) {
+                showStatus('Using demo mode - limited to Florida', 'info');
+            }
+        }
+        checkAPI();
+
+        // Populate states
+        const stateSelect = document.getElementById('stateSelect');
+        for (const [abbr, name] of Object.entries(STATES)) {
+            const option = document.createElement('option');
+            option.value = abbr;
+            option.textContent = `${name} (${abbr})`;
+            stateSelect.appendChild(option);
+        }
+
+        // File upload handling
+        const uploadZone = document.getElementById('uploadZone');
+        const csvInput = document.getElementById('csvInput');
+        
+        uploadZone.addEventListener('click', () => csvInput.click());
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderStyle = 'solid';
+            uploadZone.style.backgroundColor = '#f8f6ff';
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.borderStyle = 'dashed';
+            uploadZone.style.backgroundColor = '';
+        });
+        
+        uploadZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            uploadZone.style.borderStyle = 'dashed';
+            uploadZone.style.backgroundColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                await handleFile(file);
+            }
+        });
+        
+        csvInput.addEventListener('change', async (e) => {
+            if (e.target.files[0]) {
+                await handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            csvFile = file;
+            uploadZone.classList.add('has-file');
+            uploadZone.innerHTML = `
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <p style="margin: 10px 0; font-weight: 600; color: #4caf50;">File loaded!</p>
+                <p style="font-size: 14px;">${file.name}</p>
+            `;
+            
+            // Parse CSV to get columns
+            const text = await file.text();
+            csvData = parseCSV(text);
+            
+            // Show setup panel
+            document.getElementById('setupPanel').style.display = 'block';
+            
+            // Display columns for selection
+            if (csvData.length > 0) {
+                const columns = Object.keys(csvData[0]);
+                const numericColumns = columns.filter(col => {
+                    const values = csvData.slice(0, 10).map(row => row[col]);
+                    return values.some(v => !isNaN(parseFloat(v)) && isFinite(v));
+                });
+                
+                if (numericColumns.length > 0) {
+                    displayColumns(numericColumns);
+                }
+            }
+            
+            checkReady();
+        }
+
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index];
+                    });
+                    data.push(row);
+                }
+            }
+            return data;
+        }
+
+        function displayColumns(columns) {
+            const selector = document.getElementById('columnSelector');
+            const list = document.getElementById('columnList');
+            
+            selector.style.display = 'block';
+            list.innerHTML = '';
+            
+            columns.forEach((col, index) => {
+                const item = document.createElement('div');
+                item.className = 'column-item';
+                item.textContent = col;
+                item.dataset.column = col;
+                
+                // Auto-select first column
+                if (index === 0) {
+                    item.classList.add('selected');
+                    selectedColumn = col;
+                }
+                
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.column-item').forEach(el => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    selectedColumn = col;
+                    checkReady();
+                });
+                
+                list.appendChild(item);
+            });
+        }
+
+        // Geography selection
+        document.querySelectorAll('.geo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.geo-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedLevel = btn.dataset.level;
+                checkReady();
+            });
+        });
+
+        stateSelect.addEventListener('change', checkReady);
+
+        function checkReady() {
+            const ready = csvFile && stateSelect.value && selectedLevel && selectedColumn;
+            document.getElementById('createBtn').disabled = !ready;
+        }
+
+        // Create map
+        document.getElementById('createBtn').addEventListener('click', async () => {
+            showStatus('Creating your map...', 'info');
+            
+            try {
+                if (!localAPI) {
+                    // Demo mode - use pre-loaded Florida data
+                    if (stateSelect.value !== 'FL') {
+                        showStatus('Demo mode only supports Florida. Please select FL or start the local engine.', 'error');
+                        return;
+                    }
+                    
+                    // Load pre-cached boundary
+                    const boundaryUrl = `data/fl_${selectedLevel}_simple.geojson`;
+                    const response = await fetch(boundaryUrl);
+                    if (!response.ok) throw new Error('Boundary not available in demo mode');
+                    
+                    const boundary = await response.json();
+                    
+                    // Join data
+                    resultGeoJSON = joinDataToGeoJSON(boundary, csvData, selectedColumn);
+                } else {
+                    // Use local API
+                    const formData = new FormData();
+                    formData.append('csv', csvFile);
+                    formData.append('state', stateSelect.value);
+                    formData.append('level', selectedLevel);
+                    formData.append('simplify', '0.0005');
+                    
+                    const response = await fetch(`${localAPI}/join`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to create map');
+                    resultGeoJSON = await response.json();
+                }
+                
+                // Display the map
+                displayMap(resultGeoJSON, selectedColumn);
+                
+                showStatus('Map created successfully!', 'success');
+                document.getElementById('resultActions').style.display = 'block';
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        function joinDataToGeoJSON(geojson, data, valueColumn) {
+            // Simple join logic for demo
+            const joined = { ...geojson };
+            
+            // Create lookup from CSV data
+            const dataLookup = {};
+            data.forEach(row => {
+                // Try to match by various ID fields
+                const keys = ['ZIP', 'ZCTA', 'County', 'Place', 'GEOID', 'FIPS'];
+                for (const key of keys) {
+                    if (row[key]) {
+                        dataLookup[row[key]] = row;
+                        break;
+                    }
+                }
+            });
+            
+            // Join to features
+            joined.features = joined.features.map(feature => {
+                const props = feature.properties;
+                const matchKeys = ['ZCTA5CE20', 'GEOID', 'NAME', 'GEOID20'];
+                
+                for (const key of matchKeys) {
+                    if (props[key] && dataLookup[props[key]]) {
+                        Object.assign(props, dataLookup[props[key]]);
+                        break;
+                    }
+                }
+                
+                return feature;
+            });
+            
+            return joined;
+        }
+
+        function displayMap(geojson, valueColumn) {
+            // Clear existing layer
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+            }
+            
+            // Get value range for coloring
+            const values = geojson.features
+                .map(f => parseFloat(f.properties[valueColumn]))
+                .filter(v => !isNaN(v));
+            
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            
+            // Color scale function
+            function getColor(value) {
+                if (isNaN(value)) return '#ccc';
+                const normalized = (value - min) / (max - min);
+                
+                // Color gradient from light to dark blue
+                const colors = ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#084594'];
+                const index = Math.floor(normalized * (colors.length - 1));
+                return colors[index];
+            }
+            
+            // Add GeoJSON layer with styling
+            currentLayer = L.geoJSON(geojson, {
+                style: feature => ({
+                    fillColor: getColor(parseFloat(feature.properties[valueColumn])),
+                    weight: 1,
+                    opacity: 1,
+                    color: 'white',
+                    fillOpacity: 0.7
+                }),
+                onEachFeature: (feature, layer) => {
+                    const props = feature.properties;
+                    const value = props[valueColumn];
+                    const name = props.NAME || props.ZCTA5CE20 || props.GEOID || 'Unknown';
+                    
+                    layer.bindPopup(`
+                        <strong>${name}</strong><br>
+                        ${valueColumn}: ${value || 'No data'}
+                    `);
+                    
+                    layer.on({
+                        mouseover: e => {
+                            e.target.setStyle({
+                                weight: 3,
+                                color: '#666',
+                                fillOpacity: 0.9
+                            });
+                        },
+                        mouseout: e => {
+                            currentLayer.resetStyle(e.target);
+                        }
+                    });
+                }
+            }).addTo(map);
+            
+            // Fit map to bounds
+            map.fitBounds(currentLayer.getBounds());
+            
+            // Show legend
+            showLegend(min, max, valueColumn);
+        }
+
+        function showLegend(min, max, column) {
+            const legend = document.getElementById('legend');
+            const items = document.getElementById('legendItems');
+            
+            legend.style.display = 'block';
+            items.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 10px;">${column}</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #084594;"></div>
+                    <span>${max.toFixed(0)}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4292c6;"></div>
+                    <span>${((max + min) / 2).toFixed(0)}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f7fbff;"></div>
+                    <span>${min.toFixed(0)}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ccc;"></div>
+                    <span>No data</span>
+                </div>
+            `;
+        }
+
+        // Download functionality
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (resultGeoJSON) {
+                const blob = new Blob([JSON.stringify(resultGeoJSON, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `choropleth_${stateSelect.value}_${selectedLevel}.geojson`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.toggle('active', content.dataset.content === targetTab);
+                });
+                
+                // Toggle map views
+                if (targetTab === 'arcgis') {
+                    document.getElementById('map').style.display = 'none';
+                    document.getElementById('arcgisView').style.display = 'block';
+                    initArcGISView();
+                } else {
+                    document.getElementById('map').style.display = 'block';
+                    document.getElementById('arcgisView').style.display = 'none';
+                }
+            });
+        });
+
+        // ArcGIS integration
+        function initArcGISView() {
+            require([
+                "esri/Map",
+                "esri/views/MapView",
+                "esri/layers/GeoJSONLayer"
+            ], (Map, MapView, GeoJSONLayer) => {
+                // Create a blob URL for the GeoJSON
+                const blob = new Blob([JSON.stringify(resultGeoJSON)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create the GeoJSON layer
+                const geojsonLayer = new GeoJSONLayer({
+                    url: url,
+                    renderer: {
+                        type: "simple",
+                        symbol: {
+                            type: "simple-fill",
+                            color: [102, 126, 234, 0.5],
+                            outline: {
+                                color: "white",
+                                width: 1
+                            }
+                        }
+                    }
+                });
+                
+                // Create map and view
+                const map = new Map({
+                    basemap: "gray-vector",
+                    layers: [geojsonLayer]
+                });
+                
+                const view = new MapView({
+                    container: "arcgisView",
+                    map: map,
+                    center: [-98.5795, 39.8283],
+                    zoom: 4
+                });
+            });
+        }
+
+        // ArcGIS Online login
+        document.getElementById('arcgisLoginBtn').addEventListener('click', () => {
+            // This would integrate with ArcGIS OAuth
+            showStatus('ArcGIS login integration coming soon!', 'info');
+        });
+
+        // Helper functions
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

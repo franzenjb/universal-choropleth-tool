@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 import pandas as pd
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 try:
@@ -26,6 +26,11 @@ STATE_ABBR_TO_FIPS = {
 
 CACHE_DIR = os.environ.get('ALICE_CACHE_DIR', os.path.expanduser('~/data/tiger/GENZ'))
 PARQUET_DIR = os.path.join(CACHE_DIR, 'parquet')
+try:
+    import pyarrow  # noqa: F401
+    _HAS_ARROW = True
+except Exception:
+    _HAS_ARROW = False
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCS_DIR = os.path.normpath(os.path.join(BASE_DIR, '..', 'docs'))
 
@@ -52,7 +57,10 @@ def norm_state(token: str) -> Tuple[str, str]:
 
 
 def parquet_or_zip(path_parquet: str, path_zip: str) -> str:
-    return path_parquet if os.path.exists(path_parquet) else path_zip
+    # Use parquet only if pyarrow is available and file exists
+    if _HAS_ARROW and os.path.exists(path_parquet):
+        return path_parquet
+    return path_zip
 
 
 def load_boundary(level: str, state_abbr: str, state_fips: str) -> 'gpd.GeoDataFrame':
@@ -199,6 +207,21 @@ def root():
     if os.path.isdir(DOCS_DIR):
         return RedirectResponse(url='/app/quick.html')
     return {'status': 'ok'}
+
+
+@app.get('/app')
+def app_root():
+    if os.path.isdir(DOCS_DIR):
+        return FileResponse(os.path.join(DOCS_DIR, 'quick.html'))
+    raise HTTPException(status_code=404, detail='Not Found')
+
+
+@app.get('/app/quick.html')
+def app_quick():
+    path = os.path.join(DOCS_DIR, 'quick.html')
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(status_code=404, detail='Not Found')
 
 
 @app.get('/health')
