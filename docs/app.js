@@ -119,6 +119,20 @@ const PROVIDED = {
 const el = (id) => document.getElementById(id);
 const stepEls = [el('step1'), el('step2'), el('step3'), el('step4'), el('step5')];
 let csvRows = [], statePick = '', levelPick = '', boundaryGeoJSON = null, joinedGeoJSON = null, lastMatch = {matched:0,total:0};
+let localAPI = null; // {baseUrl}
+
+async function detectLocalAPI() {
+  const statusEl = document.getElementById('engineStatus');
+  const bases = ['http://127.0.0.1:8765','http://localhost:8765'];
+  for (const b of bases) {
+    try {
+      const r = await fetch(b + '/health', { cache: 'no-store' });
+      if (r.ok) { localAPI = { baseUrl: b }; statusEl.textContent = 'Local Engine: Connected'; return; }
+    } catch {}
+  }
+  statusEl.textContent = 'Local Engine: Not connected (optional)';
+}
+detectLocalAPI();
 
 function showStep(n) { stepEls.forEach((s,i)=>s.classList.toggle('active', i===n-1)); }
 
@@ -203,8 +217,24 @@ function validateBoundaryChoice() {
 
 el('toStep5').addEventListener('click', async ()=>{
   try {
-    el('progress').textContent = 'Reading boundary…';
     const mode = document.querySelector('input[name="bmode"]:checked').value;
+    if (localAPI) {
+      el('progress').textContent = 'Joining on Local Engine…';
+      const fd = new FormData();
+      fd.append('state', statePick);
+      fd.append('level', levelPick);
+      const csvFile = document.getElementById('csvFile').files[0];
+      fd.append('csv', csvFile);
+      const r = await fetch(localAPI.baseUrl + '/join', { method: 'POST', body: fd });
+      if (!r.ok) throw new Error('Local join failed');
+      joinedGeoJSON = await r.json();
+      const feats = (joinedGeoJSON && joinedGeoJSON.features) ? joinedGeoJSON.features.length : 0;
+      el('progress').textContent = `Map ready (${feats} areas).`;
+      el('downloadBtn').disabled = false; showStep(5);
+      return;
+    }
+    // Fallback: in-browser join using provided/uploaded boundary
+    el('progress').textContent = 'Reading boundary…';
     if (mode === 'upload') {
       boundaryGeoJSON = await readJSON(boundaryFileInput.files[0]);
     } else {
@@ -216,8 +246,7 @@ el('toStep5').addEventListener('click', async ()=>{
     const { geojson, matched, total } = joinFeatures(boundaryGeoJSON, csvRows, levelPick, statePick);
     joinedGeoJSON = geojson; lastMatch = {matched,total};
     el('progress').textContent = `Matched ${matched} of ${total} areas.`;
-    el('downloadBtn').disabled = false;
-    showStep(5);
+    el('downloadBtn').disabled = false; showStep(5);
   } catch (err) {
     el('progress').textContent = 'Error preparing map: ' + (err?.message || String(err));
   }
