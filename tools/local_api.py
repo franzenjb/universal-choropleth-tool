@@ -6,7 +6,8 @@ from typing import Optional, Tuple
 import pandas as pd
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 try:
     import geopandas as gpd
@@ -25,6 +26,8 @@ STATE_ABBR_TO_FIPS = {
 
 CACHE_DIR = os.environ.get('ALICE_CACHE_DIR', os.path.expanduser('~/data/tiger/GENZ'))
 PARQUET_DIR = os.path.join(CACHE_DIR, 'parquet')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOCS_DIR = os.path.normpath(os.path.join(BASE_DIR, '..', 'docs'))
 
 
 def require_geopandas():
@@ -185,6 +188,17 @@ else:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+# Serve the local web app to avoid mixed-content/CORS when using GitHub Pages
+if os.path.isdir(DOCS_DIR):
+    app.mount('/app', StaticFiles(directory=DOCS_DIR), name='app')
+
+
+@app.get('/')
+def root():
+    if os.path.isdir(DOCS_DIR):
+        return RedirectResponse(url='/app/quick.html')
+    return {'status': 'ok'}
 
 
 @app.get('/health')

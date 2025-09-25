@@ -12,11 +12,11 @@ Quickest path (Web UI)
 4) Use a provided boundary or (optionally) upload one.
 5) Click “Create My Map” and download the GeoJSON.
 
-Optional: Enable the Local Engine (one‑click)
-1) Double‑click: `Start Local Engine.command` (inside the repo folder)
-   - First run installs dependencies; then serves at http://127.0.0.1:8765
-   - To stop, double‑click: `Stop Local Engine.command`
-2) Refresh the Quick Map page. It will show “Local Engine: Connected”.
+Optional: Local App (no CORS/mixed content)
+1) Double‑click: `Start Local App.command`
+   - Starts the engine in background and opens http://127.0.0.1:8765/app/quick.html
+   - Use this for the smoothest volunteer experience.
+   - To stop the engine: `Stop Local Engine.command`.
 
 CLI (offline batch runs)
 1) `cd "/Users/jefffranzen/Desktop/alice-choropleth-tool" && python3 -m venv .venv && source .venv/bin/activate`
