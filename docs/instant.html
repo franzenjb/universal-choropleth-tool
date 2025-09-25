@@ -537,8 +537,15 @@
                     
                     // Load pre-cached boundary
                     const boundaryUrl = `data/fl_${selectedLevel}_simple.geojson`;
+                    
                     const response = await fetch(boundaryUrl);
-                    if (!response.ok) throw new Error('Boundary not available in demo mode');
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error(`Demo mode only has Florida ZIP (zcta) data available. The ${selectedLevel} boundary file doesn't exist.`);
+                        }
+                        throw new Error(`Failed to load boundary: ${response.status} ${response.statusText}`);
+                    }
                     
                     const boundary = await response.json();
                     
@@ -613,9 +620,16 @@
                 map.removeLayer(currentLayer);
             }
             
+            // Validate GeoJSON
+            if (!geojson || !geojson.features || !Array.isArray(geojson.features)) {
+                showStatus('Invalid map data received. Please try again or check your data.', 'error');
+                console.error('Invalid GeoJSON:', geojson);
+                return;
+            }
+            
             // Get value range for coloring
             const values = geojson.features
-                .map(f => parseFloat(f.properties[valueColumn]))
+                .map(f => f.properties ? parseFloat(f.properties[valueColumn]) : NaN)
                 .filter(v => !isNaN(v));
             
             const min = Math.min(...values);
