@@ -4,6 +4,14 @@ const STATES = [
 const el = (id)=>document.getElementById(id);
 let localAPI = null, result = null;
 let map = null, layer = null;
+// Hosted boundaries for browser-only flow (initial coverage)
+const HOSTED = {
+  FL: {
+    state: 'data/fl_state_simple.geojson',
+    county: 'data/fl_county_simple.geojson',
+    subcounty: 'data/fl_subcounty_simple.geojson'
+  }
+};
 
 async function detect() {
   const bases = ['http://127.0.0.1:8765','http://localhost:8765'];
@@ -36,7 +44,30 @@ el('go').addEventListener('click', async ()=>{
   const level = el('level').value;
   const msg = el('msg');
   if (!f) { msg.textContent='Please choose a CSV file.'; return; }
-  if (!localAPI) { msg.textContent='Local Engine not connected. Please start it (see START_HERE).'; return; }
+  if (!localAPI) {
+    const byState = HOSTED[st];
+    const url = byState && byState[level];
+    if (!url) { msg.textContent='Browser-only mode: this State/Area is not yet hosted. Use the Local App (one click) or pick another area.'; return; }
+    try {
+      msg.textContent = 'Loading boundary…';
+      const resp = await fetch(url, { cache: 'no-store' });
+      const gj = await resp.json();
+      msg.textContent = 'Processing CSV…';
+      const text = await el('csv').files[0].text();
+      const rows = parseCSV(text);
+      msg.textContent = 'Joining…';
+      const { geojson } = joinFeatures(gj, rows, level, st);
+      result = geojson;
+      msg.textContent = 'Map ready.';
+      el('after').style.display='block';
+      document.getElementById('previewBtn').disabled = false;
+      renderPreview();
+      return;
+    } catch (e) {
+      msg.textContent = 'Error (browser mode): ' + (e?.message||String(e));
+      return;
+    }
+  }
   try {
     msg.textContent = 'Building your map…';
     const fd = new FormData();
