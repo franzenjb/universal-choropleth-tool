@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choropleth Map Maker - Instant Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            background: #1a1a1a;
+            color: white;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .sidebar h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar .subtitle {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+        
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #444;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            background: #222;
+        }
+        
+        .upload-zone:hover {
+            border-color: #00d4ff;
+            background: #252525;
+        }
+        
+        .upload-zone.has-file {
+            border-color: #4caf50;
+            background: #1b2b1b;
+        }
+        
+        /* Controls */
+        .control-group {
+            margin: 20px 0;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 15px 0;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        /* Map Styles Toggle */
+        .map-style-toggle {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .style-btn {
+            flex: 1;
+            padding: 8px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .style-btn.active {
+            background: #00d4ff;
+            color: white;
+            border-color: #00d4ff;
+        }
+        
+        /* Color Scheme Selector */
+        .color-schemes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .color-scheme {
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .color-scheme.active {
+            border-color: #00d4ff;
+            background: #333;
+        }
+        
+        .color-preview {
+            height: 20px;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .color-scheme span {
+            font-size: 0.8em;
+            color: #999;
+        }
+        
+        /* Status Messages */
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        
+        .status.success { 
+            background: #1b5e20; 
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        
+        .status.error { 
+            background: #b71c1c; 
+            color: #ff5252;
+            border: 1px solid #ff5252;
+        }
+        
+        .status.info { 
+            background: #01579b; 
+            color: #03a9f4;
+            border: 1px solid #03a9f4;
+        }
+        
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            min-width: 150px;
+        }
+        
+        .legend h3 {
+            margin: 0 0 12px 0;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            color: #00d4ff;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 0.85em;
+        }
+        
+        .legend-color {
+            width: 25px;
+            height: 18px;
+            margin-right: 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Stats Panel */
+        .stats-panel {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .stats-panel h3 {
+            color: #00d4ff;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.85em;
+        }
+        
+        .stat-label {
+            color: #999;
+        }
+        
+        .stat-value {
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Column Selector */
+        .column-selector {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .column-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+        
+        .column-item:hover {
+            border-color: #00d4ff;
+            background: #3a3a3a;
+        }
+        
+        .column-item.selected {
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>🗺️ Choropleth Maker</h1>
+        <p class="subtitle">Transform CSV data into beautiful maps instantly</p>
+        
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <p style="margin: 10px 0; color: #00d4ff; font-weight: 600;">Drop CSV here</p>
+            <p style="font-size: 0.8em; color: #666;">ZIP codes, counties, or other geo data</p>
+            <input type="file" id="csvInput" accept=".csv" style="display: none;">
+        </div>
+        
+        <!-- Controls -->
+        <div id="controls" style="display: none;">
+            <div class="control-group">
+                <label>State</label>
+                <select id="stateSelect">
+                    <option value="">Select state...</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Geographic Level</label>
+                <select id="geoLevel">
+                    <option value="zcta">ZIP Codes (ZCTA)</option>
+                    <option value="county">Counties</option>
+                    <option value="place">Cities/Places</option>
+                    <option value="tract">Census Tracts</option>
+                    <option value="bg">Block Groups</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Data Column to Visualize</label>
+                <div class="column-selector" id="columnSelector"></div>
+            </div>
+            
+            <button class="btn-primary" id="createMapBtn" disabled>
+                ⚡ Create Map
+            </button>
+            
+            <div id="status"></div>
+            
+            <!-- Map Style Toggle -->
+            <div class="control-group" id="styleControls" style="display: none;">
+                <label>Map Style</label>
+                <div class="map-style-toggle">
+                    <button class="style-btn active" data-style="dark">🌙 Dark</button>
+                    <button class="style-btn" data-style="light">☀️ Light</button>
+                    <button class="style-btn" data-style="satellite">🛰️ Satellite</button>
+                </div>
+            </div>
+            
+            <!-- Color Schemes -->
+            <div class="control-group" id="colorControls" style="display: none;">
+                <label>Color Scheme</label>
+                <div class="color-schemes">
+                    <div class="color-scheme active" data-scheme="poverty">
+                        <div class="color-preview" style="background: linear-gradient(90deg, #fff5f0, #7f2704);"></div>
+                        <span>Poverty</span>
+                    </div>
+                    <div class="color-scheme" data-scheme="blues">
+                        <div class="color-preview" style="background: linear-gradient(90deg, #f7fbff, #08519c);"></div>
+                        <span>Blues</span>
+                    </div>
+                    <div class="color-scheme" data-scheme="heat">
+                        <div class="color-preview" style="background: linear-gradient(90deg, #ffffcc, #800026);"></div>
+                        <span>Heat</span>
+                    </div>
+                    <div class="color-scheme" data-scheme="viridis">
+                        <div class="color-preview" style="background: linear-gradient(90deg, #440154, #fde725);"></div>
+                        <span>Viridis</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Panel -->
+            <div class="stats-panel" id="statsPanel" style="display: none;">
+                <h3>Data Statistics</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Features:</span>
+                    <span class="stat-value" id="statFeatures">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Min Value:</span>
+                    <span class="stat-value" id="statMin">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Max Value:</span>
+                    <span class="stat-value" id="statMax">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Average:</span>
+                    <span class="stat-value" id="statAvg">-</span>
+                </div>
+            </div>
+            
+            <button class="btn-primary" id="downloadBtn" style="display: none;">
+                ⬇️ Download GeoJSON
+            </button>
+        </div>
+    </div>
+    
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="legend" id="legend" style="display: none;">
+            <h3>Legend</h3>
+            <div id="legendItems"></div>
+        </div>
+    </div>
+    
+    <script>
+        // State data
+        const STATES = {
+            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 
+            'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware',
+            'DC': 'District of Columbia', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii',
+            'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas',
+            'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi',
+            'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada',
+            'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+            'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma',
+            'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah',
+            'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia',
+            'WI': 'Wisconsin', 'WY': 'Wyoming', 'PR': 'Puerto Rico'
+        };
+        
+        // Color schemes
+        const COLOR_SCHEMES = {
+            poverty: ['#fff5f0', '#fee0d2', '#fcbba1', '#fc9272', '#fb6a4a', '#ef3b2c', '#cb181d', '#a50f15', '#67000d'],
+            blues: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'],
+            heat: ['#ffffcc', '#ffeda0', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#bd0026', '#800026'],
+            viridis: chroma.scale(['#440154', '#31688e', '#35b779', '#fde725']).colors(9)
+        };
+        
+        // Global variables
+        let map = null;
+        let currentLayer = null;
+        let csvFile = null;
+        let csvData = null;
+        let selectedColumn = null;
+        let resultGeoJSON = null;
+        let currentBasemap = 'dark';
+        let currentColorScheme = 'poverty';
+        let localAPI = null;
+        
+        // Initialize map with dark theme
+        map = L.map('map').setView([39.8283, -98.5795], 4);
+        
+        // Basemap options
+        const basemaps = {
+            dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }),
+            light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }),
+            satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri'
+            })
+        };
+        
+        basemaps.dark.addTo(map);
+        
+        // Check for local API
+        async function checkAPI() {
+            try {
+                const response = await fetch('http://127.0.0.1:8765/health');
+                if (response.ok) {
+                    localAPI = 'http://127.0.0.1:8765';
+                    showStatus('Local engine connected', 'success');
+                } else {
+                    showStatus('Using demo mode', 'info');
+                }
+            } catch (e) {
+                showStatus('Using demo mode', 'info');
+            }
+        }
+        checkAPI();
+        
+        // Populate states
+        const stateSelect = document.getElementById('stateSelect');
+        for (const [abbr, name] of Object.entries(STATES)) {
+            const option = document.createElement('option');
+            option.value = abbr;
+            option.textContent = `${name} (${abbr})`;
+            stateSelect.appendChild(option);
+        }
+        
+        // File upload
+        const uploadZone = document.getElementById('uploadZone');
+        const csvInput = document.getElementById('csvInput');
+        
+        uploadZone.addEventListener('click', () => csvInput.click());
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#00d4ff';
+        });
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.borderColor = '#444';
+        });
+        uploadZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#444';
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                await handleFile(file);
+            }
+        });
+        csvInput.addEventListener('change', async (e) => {
+            if (e.target.files[0]) {
+                await handleFile(e.target.files[0]);
+            }
+        });
+        
+        async function handleFile(file) {
+            csvFile = file;
+            uploadZone.classList.add('has-file');
+            uploadZone.innerHTML = `
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <p style="margin: 10px 0; font-weight: 600; color: #4caf50;">File loaded!</p>
+                <p style="font-size: 0.9em;">${file.name}</p>
+            `;
+            
+            // Parse CSV
+            const text = await file.text();
+            csvData = parseCSV(text);
+            
+            // Show controls
+            document.getElementById('controls').style.display = 'block';
+            
+            // Display columns
+            if (csvData && csvData.length > 0) {
+                displayColumns(Object.keys(csvData[0]));
+            }
+            
+            checkReady();
+        }
+        
+        function parseCSV(text) {
+            if (!text || !text.trim()) return [];
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length === 0) return [];
+            
+            // Handle BOM and quotes properly
+            const cleanLine = (line) => {
+                return line.replace(/^\ufeff/, ''); // Remove BOM
+            };
+            
+            const parseLine = (line) => {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result;
+            };
+            
+            const headers = parseLine(cleanLine(lines[0]));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                data.push(row);
+            }
+            
+            return data;
+        }
+        
+        function displayColumns(columns) {
+            const selector = document.getElementById('columnSelector');
+            selector.innerHTML = '';
+            
+            columns.forEach((col, index) => {
+                if (!col) return;
+                
+                const item = document.createElement('div');
+                item.className = 'column-item';
+                item.textContent = col;
+                item.dataset.column = col;
+                
+                // Auto-select first numeric column or specific poverty columns
+                const isPovertyColumn = col.toLowerCase().includes('poverty') || 
+                                       col.toLowerCase().includes('alice') ||
+                                       col.toLowerCase().includes('household');
+                                       
+                if ((index === 0 && !selectedColumn) || isPovertyColumn) {
+                    item.classList.add('selected');
+                    selectedColumn = col;
+                }
+                
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.column-item').forEach(el => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    selectedColumn = col;
+                    checkReady();
+                });
+                
+                selector.appendChild(item);
+            });
+        }
+        
+        function checkReady() {
+            const ready = csvFile && stateSelect.value && selectedColumn;
+            document.getElementById('createMapBtn').disabled = !ready;
+        }
+        
+        stateSelect.addEventListener('change', checkReady);
+        document.getElementById('geoLevel').addEventListener('change', checkReady);
+        
+        // Create map
+        document.getElementById('createMapBtn').addEventListener('click', async () => {
+            showStatus('Creating your choropleth map...', 'info');
+            
+            try {
+                if (localAPI) {
+                    // Use local API
+                    const formData = new FormData();
+                    formData.append('csv', csvFile);
+                    formData.append('state', stateSelect.value);
+                    formData.append('level', document.getElementById('geoLevel').value);
+                    formData.append('simplify', '0.0005');
+                    
+                    const response = await fetch(`${localAPI}/join`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to create map');
+                    resultGeoJSON = await response.json();
+                } else {
+                    showStatus('Demo mode: Limited to sample data', 'error');
+                    return;
+                }
+                
+                // Display the map with proper choropleth colors
+                displayChoropleth(resultGeoJSON, selectedColumn);
+                
+                showStatus('Map created successfully!', 'success');
+                
+                // Show additional controls
+                document.getElementById('styleControls').style.display = 'block';
+                document.getElementById('colorControls').style.display = 'block';
+                document.getElementById('statsPanel').style.display = 'block';
+                document.getElementById('downloadBtn').style.display = 'block';
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        });
+        
+        function displayChoropleth(geojson, valueColumn) {
+            // Clear existing layer
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+            }
+            
+            // Validate GeoJSON
+            if (!geojson || !geojson.features || !Array.isArray(geojson.features)) {
+                showStatus('Invalid map data', 'error');
+                return;
+            }
+            
+            // Get values and calculate statistics
+            const values = [];
+            geojson.features.forEach(feature => {
+                if (feature.properties && feature.properties[valueColumn]) {
+                    const val = parseFloat(feature.properties[valueColumn]);
+                    if (!isNaN(val)) {
+                        values.push(val);
+                    }
+                }
+            });
+            
+            if (values.length === 0) {
+                showStatus('No numeric data found in selected column', 'error');
+                return;
+            }
+            
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            
+            // Update stats
+            document.getElementById('statFeatures').textContent = geojson.features.length;
+            document.getElementById('statMin').textContent = min.toLocaleString();
+            document.getElementById('statMax').textContent = max.toLocaleString();
+            document.getElementById('statAvg').textContent = Math.round(avg).toLocaleString();
+            
+            // Create color scale
+            const colorScale = chroma.scale(COLOR_SCHEMES[currentColorScheme]).domain([min, max]);
+            
+            // Style function
+            function getStyle(feature) {
+                const value = feature.properties ? parseFloat(feature.properties[valueColumn]) : NaN;
+                
+                return {
+                    fillColor: isNaN(value) ? '#808080' : colorScale(value).hex(),
+                    weight: 0.5,
+                    opacity: 1,
+                    color: currentBasemap === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                    fillOpacity: 0.8
+                };
+            }
+            
+            // Add GeoJSON layer
+            currentLayer = L.geoJSON(geojson, {
+                style: getStyle,
+                onEachFeature: (feature, layer) => {
+                    const props = feature.properties || {};
+                    const value = props[valueColumn];
+                    
+                    // Create popup content
+                    let popupContent = '<div style="min-width: 200px;">';
+                    popupContent += `<h4 style="margin: 0 0 10px 0; color: #00d4ff;">${props.NAME || props.ZCTA5CE20 || props.GEOID || 'Unknown'}</h4>`;
+                    popupContent += '<table style="width: 100%;">';
+                    
+                    // Show selected value prominently
+                    popupContent += `<tr><td><strong>${valueColumn}:</strong></td><td style="text-align: right; color: #00d4ff; font-weight: bold;">${value ? parseFloat(value).toLocaleString() : 'No data'}</td></tr>`;
+                    
+                    // Show other relevant fields
+                    Object.keys(props).forEach(key => {
+                        if (key !== valueColumn && !key.startsWith('_') && props[key]) {
+                            popupContent += `<tr><td>${key}:</td><td style="text-align: right;">${props[key]}</td></tr>`;
+                        }
+                    });
+                    
+                    popupContent += '</table></div>';
+                    
+                    layer.bindPopup(popupContent, {
+                        className: currentBasemap === 'dark' ? 'dark-popup' : 'light-popup'
+                    });
+                    
+                    // Hover effects
+                    layer.on({
+                        mouseover: (e) => {
+                            e.target.setStyle({
+                                weight: 2,
+                                color: '#00d4ff',
+                                fillOpacity: 1
+                            });
+                        },
+                        mouseout: (e) => {
+                            currentLayer.resetStyle(e.target);
+                        }
+                    });
+                }
+            }).addTo(map);
+            
+            // Fit map to bounds
+            map.fitBounds(currentLayer.getBounds());
+            
+            // Show legend
+            showLegend(min, max, valueColumn, colorScale);
+        }
+        
+        function showLegend(min, max, column, colorScale) {
+            const legend = document.getElementById('legend');
+            const items = document.getElementById('legendItems');
+            
+            legend.style.display = 'block';
+            
+            // Create legend items
+            const steps = 5;
+            let html = `<div style="font-weight: 600; margin-bottom: 10px; color: white;">${column}</div>`;
+            
+            for (let i = steps - 1; i >= 0; i--) {
+                const value = min + (max - min) * (i / (steps - 1));
+                const color = colorScale(value).hex();
+                
+                html += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${color};"></div>
+                        <span>${Math.round(value).toLocaleString()}</span>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #808080;"></div>
+                    <span>No data</span>
+                </div>
+            `;
+            
+            items.innerHTML = html;
+        }
+        
+        // Map style toggle
+        document.querySelectorAll('.style-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const style = btn.dataset.style;
+                
+                // Update buttons
+                document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Change basemap
+                Object.values(basemaps).forEach(layer => map.removeLayer(layer));
+                basemaps[style].addTo(map);
+                currentBasemap = style;
+                
+                // Refresh layer if exists
+                if (currentLayer && resultGeoJSON) {
+                    displayChoropleth(resultGeoJSON, selectedColumn);
+                }
+            });
+        });
+        
+        // Color scheme toggle
+        document.querySelectorAll('.color-scheme').forEach(scheme => {
+            scheme.addEventListener('click', () => {
+                const schemeName = scheme.dataset.scheme;
+                
+                // Update selection
+                document.querySelectorAll('.color-scheme').forEach(s => s.classList.remove('active'));
+                scheme.classList.add('active');
+                currentColorScheme = schemeName;
+                
+                // Refresh map
+                if (currentLayer && resultGeoJSON) {
+                    displayChoropleth(resultGeoJSON, selectedColumn);
+                }
+            });
+        });
+        
+        // Download
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (resultGeoJSON) {
+                const blob = new Blob([JSON.stringify(resultGeoJSON, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `choropleth_${stateSelect.value}_${selectedColumn.replace(/\s+/g, '_')}.geojson`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        });
+        
+        // Status helper
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Add custom popup styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .dark-popup .leaflet-popup-content-wrapper {
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                backdrop-filter: blur(10px);
+            }
+            .dark-popup .leaflet-popup-tip {
+                background: rgba(0, 0, 0, 0.9);
+            }
+            .light-popup .leaflet-popup-content-wrapper {
+                background: rgba(255, 255, 255, 0.95);
+                color: #333;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
