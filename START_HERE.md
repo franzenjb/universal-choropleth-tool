@@ -12,14 +12,11 @@ Quickest path (Web UI)
 4) Use a provided boundary or (optionally) upload one.
 5) Click “Create My Map” and download the GeoJSON.
 
-Optional: Enable the Local Engine (for auto boundaries and big layers)
-1) Terminal:
-   - `cd "/Users/jefffranzen/Desktop/alice-choropleth-tool"`
-   - `python3 -m venv .venv && source .venv/bin/activate`
-   - `pip install fastapi uvicorn[standard] geopandas pyogrio shapely pyproj pandas`
-   - `export ALICE_CACHE_DIR=~/data/tiger/GENZ`
-   - `python tools/local_api.py`
-2) Refresh the web page. It will auto‑detect the local engine. You no longer need to pick/upload boundaries — the page will fetch the correct one and join server‑side.
+Optional: Enable the Local Engine (one‑click)
+1) Double‑click: `Start Local Engine.command` (inside the repo folder)
+   - First run installs dependencies; then serves at http://127.0.0.1:8765
+   - To stop, double‑click: `Stop Local Engine.command`
+2) Refresh the Quick Map page. It will show “Local Engine: Connected”.
 
 CLI (offline batch runs)
 1) `cd "/Users/jefffranzen/Desktop/alice-choropleth-tool" && python3 -m venv .venv && source .venv/bin/activate`
