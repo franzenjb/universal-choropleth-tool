@@ -667,7 +667,10 @@
                     });
                     
                     if (!response.ok) throw new Error('Failed to create map');
-                    resultGeoJSON = await response.json();
+                    
+                    // The server returns JSON as a string, so we need to handle both cases
+                    const responseData = await response.json();
+                    resultGeoJSON = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
                 } else {
                     showStatus('Demo mode: Limited to sample data', 'error');
                     return;
