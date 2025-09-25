@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick Map</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Quick Map</h1>
+        <p class="tagline">One screen: CSV + State + Area → Download GeoJSON</p>
+        <div id="engine" class="info"></div>
+      </header>
+
+      <section class="step active">
+        <label>CSV File
+          <input type="file" id="csv" accept="text/csv,.csv" />
+        </label>
+        <div class="row" style="margin-top:8px; gap:10px;">
+          <label>State
+            <select id="state"></select>
+          </label>
+          <label>Area
+            <select id="level">
+              <option value="county">County</option>
+              <option value="subcounty">County‑Subdivision</option>
+              <option value="place">Place (City/Town)</option>
+              <option value="zcta">ZIP Code Areas</option>
+              <option value="tract">Census Tract</option>
+              <option value="state">State</option>
+            </select>
+          </label>
+        </div>
+        <div class="nav" style="margin-top:12px;">
+          <button id="go">Create Map</button>
+        </div>
+        <div id="msg" class="info" style="margin-top:10px;"></div>
+        <div id="after" style="margin-top:12px; display:none;">
+          <button id="download">Download GeoJSON</button>
+        </div>
+      </section>
+    </main>
+    <script src="quick.js"></script>
+  </body>
+  </html>
+

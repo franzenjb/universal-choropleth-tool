@@ -42,8 +42,9 @@ python tools/convert_cache_to_parquet.py --cache-dir "$ALICE_CACHE_DIR"
 
 ## Browser UI (GitHub Pages)
 - Files live in `docs/` so Pages can serve from the `main` branch.
+- Quick Map (one screen): https://franzenjb.github.io/alice-choropleth-tool/quick.html
+- Wizard: https://franzenjb.github.io/alice-choropleth-tool/
 - To run locally: open `docs/index.html` or serve with `python -m http.server -d docs 8080`
-- Workflow: pick boundary GeoJSON (from CLI) + ALICE CSV → “Join and Download GeoJSON”
 
 ## Notes
 - ZCTA uses 2020 500k cartographic boundary (most stable/available).
