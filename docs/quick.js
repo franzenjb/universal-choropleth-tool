@@ -4,12 +4,14 @@ const STATES = [
 const el = (id)=>document.getElementById(id);
 let localAPI = null, result = null;
 let map = null, layer = null;
-// Hosted boundaries for browser-only flow (initial coverage)
+// Hosted boundaries for browser-only flow (Florida coverage)
 const HOSTED = {
   FL: {
     state: 'data/fl_state_simple.geojson',
     county: 'data/fl_county_simple.geojson',
-    subcounty: 'data/fl_subcounty_simple.geojson'
+    subcounty: 'data/fl_subcounty_simple.geojson',
+    place: 'data/fl_place_simple.geojson',
+    zcta: 'data/fl_zcta_simple.geojson'
   }
 };
 
