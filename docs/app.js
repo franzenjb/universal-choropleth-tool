@@ -192,6 +192,11 @@ function renderProvidedList() {
   providedList.innerHTML = '';
   const entry = (PROVIDED[statePick]||{})[levelPick];
   if (!entry) {
+    if (localAPI) {
+      providedList.innerHTML = '<div class="info">Using Local Engine: boundary will be selected automatically.</div>';
+      validateBoundaryChoice();
+      return;
+    }
     providedList.innerHTML = '<div class="info">No built‑in boundary for this selection yet. Choose “Upload my own”.</div>';
     return;
   }
@@ -204,6 +209,12 @@ function renderProvidedList() {
 
 boundaryFileInput.addEventListener('change', ()=>{ validateBoundaryChoice(); });
 function validateBoundaryChoice() {
+  // If Local Engine is available, we don't require a boundary selection
+  if (localAPI) {
+    el('toStep5').disabled = false;
+    el('boundaryInfo').textContent = 'Local Engine will select the boundary automatically.';
+    return;
+  }
   const mode = document.querySelector('input[name="bmode"]:checked').value;
   if (mode === 'upload') {
     el('boundaryInfo').textContent = boundaryFileInput.files[0] ? `Selected: ${boundaryFileInput.files[0].name}` : '';
