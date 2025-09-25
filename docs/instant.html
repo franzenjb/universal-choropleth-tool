@@ -427,32 +427,48 @@
             document.getElementById('setupPanel').style.display = 'block';
             
             // Display columns for selection
-            if (csvData.length > 0) {
+            if (csvData && csvData.length > 0) {
                 const columns = Object.keys(csvData[0]);
                 const numericColumns = columns.filter(col => {
-                    const values = csvData.slice(0, 10).map(row => row[col]);
-                    return values.some(v => !isNaN(parseFloat(v)) && isFinite(v));
+                    if (!col) return false;
+                    const values = csvData.slice(0, Math.min(10, csvData.length)).map(row => row[col]);
+                    return values.some(v => v && !isNaN(parseFloat(v)) && isFinite(v));
                 });
                 
                 if (numericColumns.length > 0) {
                     displayColumns(numericColumns);
+                } else {
+                    // If no numeric columns found, show all columns
+                    displayColumns(columns.filter(col => col));
                 }
+            } else {
+                showStatus('Warning: CSV appears to be empty or invalid', 'error');
             }
             
             checkReady();
         }
 
         function parseCSV(text) {
-            const lines = text.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+            if (!text || !text.trim()) {
+                console.error('Empty CSV file');
+                return [];
+            }
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length === 0) {
+                console.error('No lines in CSV');
+                return [];
+            }
+            
+            const headers = lines[0].split(',').map(h => h ? h.trim().replace(/^["']|["']$/g, '') : '');
             const data = [];
             
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim()) {
-                    const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                    const values = lines[i].split(',').map(v => v ? v.trim().replace(/^["']|["']$/g, '') : '');
                     const row = {};
                     headers.forEach((header, index) => {
-                        row[header] = values[index];
+                        row[header] = values[index] || '';
                     });
                     data.push(row);
                 }
