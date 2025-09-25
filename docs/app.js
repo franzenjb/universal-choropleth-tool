@@ -1,5 +1,5 @@
 function setStatus(msg) {
-  document.getElementById('status').textContent = msg || '';
+  // no-op in wizard version
 }
 
 // Minimal CSV parser handling commas and quotes
@@ -105,31 +105,127 @@ function download(filename, text) {
   URL.revokeObjectURL(url);
 }
 
-document.getElementById('joinBtn').addEventListener('click', async () => {
+// Wizard logic injected below
+const STATES = [
+  'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','PR','GU','VI','AS','MP'
+];
+
+const PROVIDED = {
+  FL: {
+    subcounty: { label: 'Florida County‑Subdivisions (simplified)', path: 'data/fl_subcounty_simple.geojson' }
+  }
+};
+
+const el = (id) => document.getElementById(id);
+const stepEls = [el('step1'), el('step2'), el('step3'), el('step4'), el('step5')];
+let csvRows = [], statePick = '', levelPick = '', boundaryGeoJSON = null, joinedGeoJSON = null, lastMatch = {matched:0,total:0};
+
+function showStep(n) { stepEls.forEach((s,i)=>s.classList.toggle('active', i===n-1)); }
+
+// Step 1: CSV upload
+el('csvFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  el('csvInfo').textContent = f ? `Selected: ${f.name}` : '';
+  if (!f) { el('toStep2').disabled = true; return; }
+  const txt = await readFileAsText(f);
+  csvRows = parseCSV(txt);
+  const cols = Object.keys(csvRows[0]||{});
+  const states = new Set(csvRows.map(r => String(r.State||r.state||'').trim().toUpperCase()).filter(Boolean));
+  const guess = [...states].find(s=>STATES.includes(s));
+  el('csvInfo').textContent = `Columns: ${cols.join(', ').slice(0,120)}${cols.length>15?'…':''}` + (guess?`\nDetected state: ${guess}`:'');
+  el('toStep2').disabled = false;
+});
+el('toStep2').addEventListener('click', () => { showStep(2); });
+
+// Step 2: State select
+const stateSelect = el('stateSelect');
+stateSelect.innerHTML = STATES.map(s=>`<option value="${s}">${s}</option>`).join('');
+el('stateSelect').addEventListener('change', (e)=>{ statePick = e.target.value; el('stateInfo').textContent = `Selected: ${statePick}`; });
+function preselectState() {
+  const states = new Set(csvRows.map(r => String(r.State||r.state||'').trim().toUpperCase()).filter(Boolean));
+  const guess = [...states].find(s=>STATES.includes(s));
+  stateSelect.value = guess || 'FL';
+  statePick = stateSelect.value;
+  el('stateInfo').textContent = `Selected: ${statePick}`;
+}
+preselectState();
+el('toStep3').addEventListener('click', ()=>{ if (!statePick) preselectState(); showStep(3); });
+el('step2').addEventListener('click', (e)=>{ if (e.target.classList.contains('back')) showStep(parseInt(e.target.dataset.back,10)); });
+
+// Step 3: Level selection
+const cards = el('levelCards').querySelectorAll('.card');
+cards.forEach(c=>c.addEventListener('click',()=>{
+  cards.forEach(x=>x.classList.remove('selected'));
+  c.classList.add('selected');
+  levelPick = c.dataset.level;
+  el('toStep4').disabled = false;
+}));
+el('toStep4').addEventListener('click', ()=>{ renderProvidedList(); showStep(4); });
+el('step3').addEventListener('click', (e)=>{ if (e.target.classList.contains('back')) showStep(parseInt(e.target.dataset.back,10)); });
+
+// Step 4: Boundary choice
+const providedList = el('providedList');
+const boundaryFileInput = el('boundaryFile');
+document.querySelectorAll('input[name="bmode"]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    const up = document.querySelector('input[name="bmode"]:checked').value === 'upload';
+    boundaryFileInput.disabled = !up;
+    validateBoundaryChoice();
+  });
+});
+
+function renderProvidedList() {
+  providedList.innerHTML = '';
+  const entry = (PROVIDED[statePick]||{})[levelPick];
+  if (!entry) {
+    providedList.innerHTML = '<div class="info">No built‑in boundary for this selection yet. Choose “Upload my own”.</div>';
+    return;
+  }
+  const row = document.createElement('label');
+  row.className = 'opt';
+  row.innerHTML = `<input type=\"radio\" name=\"prov\" value=\"${entry.path}\" checked> <span>${entry.label}</span>`;
+  providedList.appendChild(row);
+  validateBoundaryChoice();
+}
+
+boundaryFileInput.addEventListener('change', ()=>{ validateBoundaryChoice(); });
+function validateBoundaryChoice() {
+  const mode = document.querySelector('input[name="bmode"]:checked').value;
+  if (mode === 'upload') {
+    el('boundaryInfo').textContent = boundaryFileInput.files[0] ? `Selected: ${boundaryFileInput.files[0].name}` : '';
+    el('toStep5').disabled = !boundaryFileInput.files[0];
+  } else {
+    const picked = document.querySelector('input[name="prov"]:checked');
+    el('toStep5').disabled = !picked;
+    el('boundaryInfo').textContent = picked ? `Using provided boundary.` : '';
+  }
+}
+
+el('toStep5').addEventListener('click', async ()=>{
   try {
-    const boundaryFile = document.getElementById('boundaryFile').files[0];
-    const dataFile = document.getElementById('dataFile').files[0];
-    const level = document.getElementById('level').value;
-    const state = (document.getElementById('state').value || '').toUpperCase();
-    if (!boundaryFile || !dataFile) { setStatus('Please select both files.'); return; }
-
-    setStatus('Reading boundary...');
-    const gj = await readJSON(boundaryFile);
-
-    setStatus('Parsing CSV...');
-    const csvText = await readFileAsText(dataFile);
-    const rows = parseCSV(csvText);
-
-    setStatus('Joining...');
-    const { geojson, matched, total } = joinFeatures(gj, rows, level, state);
-    setStatus(`Joined ${matched} of ${total} features. Preparing download...`);
-
-    const outName = `${(state||'US')}_${level}_joined.geojson`;
-    download(outName, JSON.stringify(geojson));
-    setStatus(`Done. Downloaded ${outName}.`);
-  } catch (e) {
-    console.error(e);
-    setStatus('Error: ' + (e && e.message ? e.message : String(e)));
+    el('progress').textContent = 'Reading boundary…';
+    const mode = document.querySelector('input[name="bmode"]:checked').value;
+    if (mode === 'upload') {
+      boundaryGeoJSON = await readJSON(boundaryFileInput.files[0]);
+    } else {
+      const picked = document.querySelector('input[name="prov"]:checked').value;
+      const resp = await fetch(picked, { cache: 'no-store' });
+      boundaryGeoJSON = await resp.json();
+    }
+    el('progress').textContent = 'Joining…';
+    const { geojson, matched, total } = joinFeatures(boundaryGeoJSON, csvRows, levelPick, statePick);
+    joinedGeoJSON = geojson; lastMatch = {matched,total};
+    el('progress').textContent = `Matched ${matched} of ${total} areas.`;
+    el('downloadBtn').disabled = false;
+    showStep(5);
+  } catch (err) {
+    el('progress').textContent = 'Error preparing map: ' + (err?.message || String(err));
   }
 });
 
+el('downloadBtn').addEventListener('click', ()=>{
+  if (!joinedGeoJSON) return;
+  const outName = `${statePick||'US'}_${levelPick}_joined.geojson`;
+  download(outName, JSON.stringify(joinedGeoJSON));
+  el('resultInfo').textContent = `Downloaded ${outName}. Now upload to ArcGIS and color by “Below_ALICE_Rate”.`;
+});

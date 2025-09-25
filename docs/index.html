@@ -3,57 +3,91 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ALICE Choropleth Joiner</title>
+    <title>ALICE Map Maker (Volunteer Mode)</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main>
-      <h1>ALICE CSV ↔ GeoJSON Joiner</h1>
-      <p>Fully local: drop a boundary GeoJSON and an ALICE CSV to produce a joined GeoJSON for ArcGIS.</p>
+      <header>
+        <h1>ALICE Map Maker</h1>
+        <p class="tagline">Make a simple choropleth map from your ALICE CSV — no signup, no credits.</p>
+      </header>
 
-      <section class="panel">
-        <label class="file">Boundary GeoJSON
-          <input type="file" id="boundaryFile" accept="application/geo+json,application/json,.geojson" />
-        </label>
-        <label class="file">ALICE CSV
-          <input type="file" id="dataFile" accept="text/csv,.csv" />
-        </label>
+      <ol class="steps">
+        <li id="step1" class="step active">
+          <h2>1) Add your CSV</h2>
+          <p class="hint">Drag and drop your ALICE CSV here, or pick a file.</p>
+          <input type="file" id="csvFile" accept="text/csv,.csv" />
+          <div id="csvInfo" class="info"></div>
+          <button class="next" id="toStep2" disabled>Continue</button>
+        </li>
 
-        <div class="row">
-          <label>Level
-            <select id="level">
-              <option value="place">Place</option>
-              <option value="subcounty">Sub-County</option>
-              <option value="zcta">ZCTA / ZIP</option>
-            </select>
-          </label>
+        <li id="step2" class="step">
+          <h2>2) Pick your State</h2>
+          <p class="hint">We’ll suggest one if we can detect it from the CSV.</p>
+          <select id="stateSelect"></select>
+          <div id="stateInfo" class="info"></div>
+          <div class="nav">
+            <button class="back" data-back="1">Back</button>
+            <button class="next" id="toStep3">Continue</button>
+          </div>
+        </li>
 
-          <label>State (STUSPS)
-            <input type="text" id="state" maxlength="2" placeholder="FL" />
-          </label>
-        </div>
+        <li id="step3" class="step">
+          <h2>3) What area do you want to map?</h2>
+          <div class="cards" id="levelCards">
+            <button class="card" data-level="place">
+              <strong>City / Town</strong>
+              <span>“Place” (cities/towns) — use when your CSV is at the city level.</span>
+            </button>
+            <button class="card" data-level="subcounty">
+              <strong>County‑Subdivision</strong>
+              <span>Minor civil divisions or CCDs — common for county‑level planning.</span>
+            </button>
+            <button class="card" data-level="zcta">
+              <strong>ZIP Code Areas</strong>
+              <span>ZIP‑like areas (ZCTAs). Some ZIPs don’t match; we’ll show you how to fix.</span>
+            </button>
+          </div>
+          <div class="nav">
+            <button class="back" data-back="2">Back</button>
+            <button class="next" id="toStep4" disabled>Continue</button>
+          </div>
+        </li>
 
-        <button id="joinBtn">Join and Download GeoJSON</button>
-        <div id="status"></div>
-      </section>
+        <li id="step4" class="step">
+          <h2>4) Boundaries</h2>
+          <p class="hint">Use a provided boundary (recommended) or upload your own GeoJSON.</p>
+          <div class="boundaries">
+            <div>
+              <label><input type="radio" name="bmode" value="provided" checked> Use provided boundary</label>
+              <div id="providedList" class="list"></div>
+            </div>
+            <div>
+              <label><input type="radio" name="bmode" value="upload"> Upload my own boundary</label>
+              <input type="file" id="boundaryFile" accept="application/geo+json,application/json,.geojson" disabled />
+            </div>
+          </div>
+          <div id="boundaryInfo" class="info"></div>
+          <div class="nav">
+            <button class="back" data-back="3">Back</button>
+            <button class="next" id="toStep5" disabled>Create My Map</button>
+          </div>
+        </li>
 
-      <section class="panel small">
-        <h3>Notes</h3>
-        <ul>
-          <li>Boundary must be GeoJSON (export via the CLI or your cache).</li>
-          <li>Joins:
-            <ul>
-              <li>Place: feature.properties.GEOID ↔ CSV.GEOID (7 digits)</li>
-              <li>Sub-County: feature.properties.GEOID ↔ CSV.GEOID (10 digits)</li>
-              <li>ZCTA: feature.properties.GEOID20/ZCTA5CE20 ↔ CSV.ZIP (5 digits)</li>
-            </ul>
-          </li>
-          <li>Computed metrics are added: Below_ALICE_Rate, ALICE_Rate, Poverty_Rate.</li>
-        </ul>
-      </section>
+        <li id="step5" class="step">
+          <h2>5) Download and Use</h2>
+          <div id="progress" class="info"></div>
+          <button id="downloadBtn" disabled>Download GeoJSON</button>
+          <p class="hint small">Next: upload to ArcGIS Online or Pro and color by “Below_ALICE_Rate”.</p>
+          <div id="resultInfo" class="info"></div>
+          <div class="nav">
+            <button class="back" data-back="4">Back</button>
+          </div>
+        </li>
+      </ol>
     </main>
 
     <script src="app.js"></script>
   </body>
   </html>
-
