@@ -10,15 +10,21 @@
     <main>
       <header>
         <h1>Quick Map</h1>
-        <p class="tagline">One screen: CSV + State + Area → Download GeoJSON</p>
+        <p class="tagline">CSV + State + Area → Download GeoJSON. Boundaries are auto‑selected from your local cache.</p>
         <div id="engine" class="info"></div>
       </header>
 
-      <section class="step active">
-        <label>CSV File
-          <input type="file" id="csv" accept="text/csv,.csv" />
-        </label>
-        <div class="row" style="margin-top:8px; gap:10px;">
+      <section class="quick">
+        <h2>1) Upload Your CSV</h2>
+        <div id="dz" class="dropzone" role="button" aria-label="Drop CSV or click to browse">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12l-4 4m4-4l4 4"/><rect x="3" y="14" width="18" height="7" rx="2" ry="2"/></svg>
+          <div id="dzLabel">Drop CSV here or click to browse</div>
+          <div class="mini">Accepts any CSV with geographic identifiers (ZIP, FIPS/GEOIDs, etc.)</div>
+          <input type="file" id="csv" accept="text/csv,.csv" style="display:none;" />
+        </div>
+
+        <h2 style="margin-top:16px;">2) Configure</h2>
+        <div class="controls">
           <label>State
             <select id="state"></select>
           </label>
@@ -33,8 +39,9 @@
             </select>
           </label>
         </div>
-        <div class="nav" style="margin-top:12px;">
-          <button id="go">Create Map</button>
+
+        <div class="actions">
+          <button id="go">Create My Map</button>
         </div>
         <div id="msg" class="info" style="margin-top:10px;"></div>
         <div id="after" style="margin-top:12px; display:none;">
@@ -45,4 +52,3 @@
     <script src="quick.js"></script>
   </body>
   </html>
-

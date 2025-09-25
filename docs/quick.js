@@ -19,6 +19,16 @@ const state = el('state');
 state.innerHTML = STATES.map(s=>`<option value="${s}">${s}</option>`).join('');
 state.value = 'FL';
 
+// Dropzone behavior
+const dz = el('dz');
+const fileInput = el('csv');
+function setFile(f){ if(!f) return; const lbl=el('dzLabel'); lbl.textContent = `Selected: ${f.name}`; }
+dz.addEventListener('click', ()=> fileInput.click());
+dz.addEventListener('dragover', (e)=>{ e.preventDefault(); dz.classList.add('hover'); });
+dz.addEventListener('dragleave', ()=> dz.classList.remove('hover'));
+dz.addEventListener('drop', (e)=>{ e.preventDefault(); dz.classList.remove('hover'); const f=e.dataTransfer.files[0]; if(f){ fileInput.files = e.dataTransfer.files; setFile(f);} });
+fileInput.addEventListener('change', ()=>{ const f=fileInput.files[0]; if(f) setFile(f); });
+
 el('go').addEventListener('click', async ()=>{
   const f = el('csv').files[0];
   const st = state.value;
@@ -50,4 +60,3 @@ el('download').addEventListener('click', ()=>{
   const a = document.createElement('a');
   a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
 });
-
