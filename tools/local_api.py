@@ -44,6 +44,13 @@ def norm_state(token: str) -> Tuple[str, str]:
     t = (token or '').strip()
     if not t:
         raise HTTPException(status_code=400, detail='state is required')
+    
+    # Handle special cases for US and regions
+    if t == 'US':
+        return 'US', 'US'
+    if t in ['NORTHEAST', 'MIDWEST', 'SOUTH', 'WEST']:
+        return t, t
+    
     if len(t) == 2 and t.isdigit():
         fips = t
         abbr = next((k for k, v in STATE_ABBR_TO_FIPS.items() if v == fips), None)
@@ -65,27 +72,64 @@ def parquet_or_zip(path_parquet: str, path_zip: str) -> str:
 
 def load_boundary(level: str, state_abbr: str, state_fips: str) -> 'gpd.GeoDataFrame':
     require_geopandas()
+    
+    # Define regions
+    REGIONS = {
+        'NORTHEAST': ['CT', 'MA', 'ME', 'NH', 'NJ', 'NY', 'PA', 'RI', 'VT'],
+        'MIDWEST': ['IL', 'IN', 'IA', 'KS', 'MI', 'MN', 'MO', 'NE', 'ND', 'OH', 'SD', 'WI'],
+        'SOUTH': ['AL', 'AR', 'DE', 'FL', 'GA', 'KY', 'LA', 'MD', 'MS', 'NC', 'OK', 'SC', 'TN', 'TX', 'VA', 'WV', 'DC'],
+        'WEST': ['AZ', 'CA', 'CO', 'ID', 'MT', 'NV', 'NM', 'OR', 'UT', 'WA', 'WY', 'AK', 'HI']
+    }
+    
     if level == 'state':
         p = parquet_or_zip(
             os.path.join(PARQUET_DIR, 'cb_2023_us_state_500k.parquet'),
             os.path.join(CACHE_DIR, 'cb_2023_us_state_500k.zip'),
         )
         gdf = gpd.read_parquet(p) if p.endswith('.parquet') else gpd.read_file(f'zip://{p}')
-        return gdf[gdf['STUSPS'] == state_abbr]
+        
+        # Handle US, regions, or individual states
+        if state_abbr == 'US':
+            # Return all states except territories for cleaner map
+            return gdf[gdf['STATEFP'].astype(int) < 60]
+        elif state_abbr in REGIONS:
+            # Return states in the specified region
+            return gdf[gdf['STUSPS'].isin(REGIONS[state_abbr])]
+        else:
+            # Return individual state
+            return gdf[gdf['STUSPS'] == state_abbr]
     if level == 'county':
         p = parquet_or_zip(
             os.path.join(PARQUET_DIR, 'cb_2023_us_county_500k.parquet'),
             os.path.join(CACHE_DIR, 'cb_2023_us_county_500k.zip'),
         )
         gdf = gpd.read_parquet(p) if p.endswith('.parquet') else gpd.read_file(f'zip://{p}')
-        return gdf[gdf['STATEFP'] == state_fips]
+        
+        if state_abbr == 'US':
+            # Return all US counties
+            return gdf
+        elif state_abbr in REGIONS:
+            # Get FIPS codes for states in region
+            region_fips = [STATE_ABBR_TO_FIPS[st] for st in REGIONS[state_abbr] if st in STATE_ABBR_TO_FIPS]
+            return gdf[gdf['STATEFP'].isin(region_fips)]
+        else:
+            return gdf[gdf['STATEFP'] == state_fips]
     if level == 'place':
         p = parquet_or_zip(
             os.path.join(PARQUET_DIR, 'cb_2023_us_place_500k.parquet'),
             os.path.join(CACHE_DIR, 'cb_2023_us_place_500k.zip'),
         )
         gdf = gpd.read_parquet(p) if p.endswith('.parquet') else gpd.read_file(f'zip://{p}')
-        return gdf[gdf['STATEFP'] == state_fips]
+        
+        if state_abbr == 'US':
+            # Return all US places
+            return gdf
+        elif state_abbr in REGIONS:
+            # Get places for states in region
+            region_fips = [STATE_ABBR_TO_FIPS[st] for st in REGIONS[state_abbr] if st in STATE_ABBR_TO_FIPS]
+            return gdf[gdf['STATEFP'].isin(region_fips)]
+        else:
+            return gdf[gdf['STATEFP'] == state_fips]
     if level == 'subcounty':
         base = f'cb_2023_{state_fips}_cousub_500k'
         p = parquet_or_zip(
@@ -113,13 +157,30 @@ def load_boundary(level: str, state_abbr: str, state_fips: str) -> 'gpd.GeoDataF
             os.path.join(CACHE_DIR, 'cb_2020_us_zcta520_500k.zip'),
         )
         gdf = gpd.read_parquet(zp) if zp.endswith('.parquet') else gpd.read_file(f'zip://{zp}')
-        sp = parquet_or_zip(
-            os.path.join(PARQUET_DIR, 'cb_2023_us_state_500k.parquet'),
-            os.path.join(CACHE_DIR, 'cb_2023_us_state_500k.zip'),
-        )
-        states = gpd.read_parquet(sp) if sp.endswith('.parquet') else gpd.read_file(f'zip://{sp}')
-        geom = states.loc[states['STUSPS'] == state_abbr, 'geometry'].values[0]
-        return gdf[gdf.geometry.centroid.within(geom)]
+        
+        if state_abbr == 'US':
+            # Return all US ZCTAs (warning: large dataset!)
+            return gdf
+        elif state_abbr in REGIONS:
+            # Get ZCTAs for all states in the region
+            sp = parquet_or_zip(
+                os.path.join(PARQUET_DIR, 'cb_2023_us_state_500k.parquet'),
+                os.path.join(CACHE_DIR, 'cb_2023_us_state_500k.zip'),
+            )
+            states = gpd.read_parquet(sp) if sp.endswith('.parquet') else gpd.read_file(f'zip://{sp}')
+            region_states = states[states['STUSPS'].isin(REGIONS[state_abbr])]
+            region_geom = region_states.unary_union
+            # Use centroid method for better performance with ZCTAs
+            return gdf[gdf.geometry.centroid.within(region_geom)]
+        else:
+            # Single state ZCTAs
+            sp = parquet_or_zip(
+                os.path.join(PARQUET_DIR, 'cb_2023_us_state_500k.parquet'),
+                os.path.join(CACHE_DIR, 'cb_2023_us_state_500k.zip'),
+            )
+            states = gpd.read_parquet(sp) if sp.endswith('.parquet') else gpd.read_file(f'zip://{sp}')
+            geom = states.loc[states['STUSPS'] == state_abbr, 'geometry'].values[0]
+            return gdf[gdf.geometry.centroid.within(geom)]
     raise HTTPException(status_code=400, detail=f'unsupported level {level}')
 
 
@@ -238,7 +299,13 @@ def boundaries(state: str, level: str):
 
 @app.post('/join')
 async def join(state: str = Form(...), level: str = Form(...), join_col: Optional[str] = Form(None), simplify: Optional[float] = Form(None), csv: UploadFile = File(...)):
-    abbr, fips = norm_state(state)
+    # Handle special cases where norm_state returns the same value for both
+    if state in ['US', 'NORTHEAST', 'MIDWEST', 'SOUTH', 'WEST']:
+        abbr = state
+        fips = state
+    else:
+        abbr, fips = norm_state(state)
+    
     gdf = load_boundary(level, abbr, fips)
     raw = await csv.read()
     try:
