@@ -1,94 +1,688 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ALICE Map Maker (Volunteer Mode)</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main>
-      <header>
-        <h1>ALICE Map Maker</h1>
-        <p class="tagline">Make a simple choropleth map from your CSV — no signup, no credits.</p>
-        <div id="engineStatus" class="info"></div>
-      </header>
-
-      <ol class="steps">
-        <li id="step1" class="step active">
-          <h2>1) Add your CSV</h2>
-          <p class="hint">Drag and drop your ALICE CSV here, or pick a file.</p>
-          <input type="file" id="csvFile" accept="text/csv,.csv" />
-          <div id="csvInfo" class="info"></div>
-          <button class="next" id="toStep2" disabled>Continue</button>
-        </li>
-
-        <li id="step2" class="step">
-          <h2>2) Pick your State</h2>
-          <p class="hint">We’ll suggest one if we can detect it from the CSV.</p>
-          <select id="stateSelect"></select>
-          <div id="stateInfo" class="info"></div>
-          <div class="nav">
-            <button class="back" data-back="1">Back</button>
-            <button class="next" id="toStep3">Continue</button>
-          </div>
-        </li>
-
-        <li id="step3" class="step">
-          <h2>3) What area do you want to map?</h2>
-          <div class="cards" id="levelCards">
-            <button class="card" data-level="place">
-              <strong>City / Town</strong>
-              <span>“Place” (cities/towns) — use when your CSV is at the city level.</span>
-            </button>
-            <button class="card" data-level="subcounty">
-              <strong>County‑Subdivision</strong>
-              <span>Minor civil divisions or CCDs — common for county‑level planning.</span>
-            </button>
-            <button class="card" data-level="zcta">
-              <strong>ZIP Code Areas</strong>
-              <span>ZIP‑like areas (ZCTAs). Some ZIPs don’t match; we’ll show you how to fix.</span>
-            </button>
-          </div>
-          <div class="nav">
-            <button class="back" data-back="2">Back</button>
-            <button class="next" id="toStep4" disabled>Continue</button>
-          </div>
-        </li>
-
-        <li id="step4" class="step">
-          <h2>4) Boundaries</h2>
-          <p class="hint">Use a provided boundary (or upload one). If the Local Engine is connected, the boundary is auto‑selected.</p>
-          <div class="boundaries">
-            <div>
-              <label><input type="radio" name="bmode" value="provided" checked> Use provided boundary</label>
-              <div id="providedList" class="list"></div>
+    <title>Free Choropleth Maker - Instant Maps from CSV</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            background: #0a0a0a;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 380px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            color: white;
+            padding: 30px;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.8);
+        }
+        
+        .sidebar h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar .subtitle {
+            color: #999;
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: linear-gradient(90deg, #ff6b6b, #ff9f40);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #444;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #1e1e1e, #151515);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+        
+        .upload-zone:hover::before {
+            opacity: 0.3;
+        }
+        
+        .upload-zone:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+        
+        .upload-zone.has-file {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #1b2b1b, #0f1f0f);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        /* Controls */
+        .control-group {
+            margin: 25px 0;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        /* Column selector */
+        .column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .column-item {
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        .column-item:hover {
+            background: #333;
+            border-color: #555;
+            transform: translateY(-1px);
+        }
+        
+        .column-item.selected {
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            border-color: transparent;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Map container */
+        #map {
+            flex: 1;
+            background: #0a0a0a;
+        }
+        
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(26, 26, 26, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            min-width: 200px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend h3 {
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #00d4ff;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 0.85em;
+        }
+        
+        .legend-color {
+            width: 25px;
+            height: 25px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Messages */
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        
+        .message.success {
+            background: #1b4332;
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        
+        .message.error {
+            background: #3d1f1f;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        
+        .message.info {
+            background: #1f2937;
+            color: #60a5fa;
+            border: 1px solid #60a5fa;
+        }
+        
+        /* Stats */
+        .stats-box {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+        
+        .stat-label {
+            color: #888;
+        }
+        
+        .stat-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>🗺️ Choropleth Maker</h1>
+        <p class="subtitle">Create beautiful data maps instantly.<br>No server, no GIS software, 100% free.</p>
+        <div class="badge">✨ WORKS OFFLINE</div>
+        
+        <div class="upload-zone" id="dropZone">
+            <input type="file" id="csvFile" accept=".csv" hidden />
+            <div class="upload-icon">📊</div>
+            <p style="font-size: 1.1em; margin-bottom: 10px; font-weight: 600;">Drop CSV here</p>
+            <p style="color: #888; font-size: 0.9em;">or click to browse</p>
+        </div>
+        
+        <div id="controlsContainer" style="display: none;">
+            <div class="control-group">
+                <label>Geographic Level</label>
+                <select id="geoLevel">
+                    <option value="">Select level...</option>
+                    <option value="us_states">US States</option>
+                    <option value="us_counties">US Counties</option>
+                    <option value="sample_zctas">Sample ZIP Codes</option>
+                </select>
             </div>
-            <div>
-              <label><input type="radio" name="bmode" value="upload"> Upload my own boundary</label>
-              <input type="file" id="boundaryFile" accept="application/geo+json,application/json,.geojson" disabled />
+            
+            <div class="control-group">
+                <label>Join Column (in your CSV)</label>
+                <select id="joinColumn">
+                    <option value="">Select column...</option>
+                </select>
             </div>
-          </div>
-          <div id="boundaryInfo" class="info"></div>
-          <div class="nav">
-            <button class="back" data-back="3">Back</button>
-            <button class="next" id="toStep5" disabled>Create My Map</button>
-          </div>
-        </li>
-
-        <li id="step5" class="step">
-          <h2>5) Download and Use</h2>
-          <div id="progress" class="info"></div>
-          <button id="downloadBtn" disabled>Download GeoJSON</button>
-          <p class="hint small">Next: upload to ArcGIS Online or Pro and color by “Below_ALICE_Rate”.</p>
-          <div id="resultInfo" class="info"></div>
-          <div class="nav">
-            <button class="back" data-back="4">Back</button>
-          </div>
-        </li>
-      </ol>
-    </main>
-
-    <script src="app.js"></script>
-  </body>
-  </html>
+            
+            <div class="control-group">
+                <label>Data Column to Visualize</label>
+                <div class="column-grid" id="dataColumns"></div>
+            </div>
+            
+            <button class="btn-primary" id="createMapBtn" disabled>
+                🚀 Create Map
+            </button>
+            
+            <div id="statsBox" class="stats-box" style="display: none;">
+                <div class="stat-row">
+                    <span class="stat-label">Features:</span>
+                    <span class="stat-value" id="statFeatures">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Min:</span>
+                    <span class="stat-value" id="statMin">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Max:</span>
+                    <span class="stat-value" id="statMax">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Matched:</span>
+                    <span class="stat-value" id="statMatched">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="messageContainer"></div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([39.8, -98.5], 4);
+        
+        // Dark basemap
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+            attribution: '© CARTO',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Global variables
+        let csvData = null;
+        let boundaries = {};
+        let currentLayer = null;
+        let metadata = null;
+        let selectedDataColumn = null;
+        
+        // Load metadata on startup
+        async function loadMetadata() {
+            try {
+                const response = await fetch('boundaries/metadata.json');
+                metadata = await response.json();
+                showMessage('Ready! Upload a CSV file to begin.', 'info');
+            } catch (error) {
+                showMessage('Error loading metadata. Please refresh the page.', 'error');
+            }
+        }
+        
+        // File upload handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('csvFile');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#00d4ff';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#444';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#444';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'text/csv') {
+                processCSV(file);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                processCSV(file);
+            }
+        });
+        
+        // Process CSV file
+        function processCSV(file) {
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    csvData = results.data.filter(row => Object.values(row).some(v => v));
+                    
+                    if (csvData.length === 0) {
+                        showMessage('CSV file is empty', 'error');
+                        return;
+                    }
+                    
+                    dropZone.classList.add('has-file');
+                    dropZone.innerHTML = `
+                        <div class="upload-icon">✅</div>
+                        <p style="font-size: 1.1em; font-weight: 600;">File Loaded!</p>
+                        <p style="color: #888; font-size: 0.9em;">${file.name}</p>
+                        <p style="color: #00d4ff; font-size: 0.85em; margin-top: 10px;">${csvData.length} rows</p>
+                    `;
+                    
+                    populateControls();
+                    document.getElementById('controlsContainer').style.display = 'block';
+                    showMessage(`Loaded ${csvData.length} rows from CSV`, 'success');
+                },
+                error: function(error) {
+                    showMessage('Error parsing CSV: ' + error.message, 'error');
+                }
+            });
+        }
+        
+        // Populate control options
+        function populateControls() {
+            const columns = Object.keys(csvData[0]);
+            
+            // Populate join column dropdown
+            const joinSelect = document.getElementById('joinColumn');
+            joinSelect.innerHTML = '<option value="">Select column...</option>';
+            columns.forEach(col => {
+                const option = document.createElement('option');
+                option.value = col;
+                option.textContent = col;
+                joinSelect.appendChild(option);
+            });
+            
+            // Populate data columns grid
+            const dataColumnsDiv = document.getElementById('dataColumns');
+            dataColumnsDiv.innerHTML = '';
+            
+            columns.forEach(col => {
+                // Check if column has numeric data
+                const sample = csvData.slice(0, 10).map(row => parseFloat(row[col]));
+                const hasNumbers = sample.some(v => !isNaN(v));
+                
+                if (hasNumbers) {
+                    const div = document.createElement('div');
+                    div.className = 'column-item';
+                    div.textContent = col;
+                    div.dataset.column = col;
+                    div.addEventListener('click', () => selectDataColumn(div, col));
+                    dataColumnsDiv.appendChild(div);
+                }
+            });
+            
+            checkReadyToCreate();
+        }
+        
+        // Select data column
+        function selectDataColumn(element, column) {
+            document.querySelectorAll('.column-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedDataColumn = column;
+            checkReadyToCreate();
+        }
+        
+        // Check if ready to create map
+        function checkReadyToCreate() {
+            const geoLevel = document.getElementById('geoLevel').value;
+            const joinColumn = document.getElementById('joinColumn').value;
+            const createBtn = document.getElementById('createMapBtn');
+            
+            if (geoLevel && joinColumn && selectedDataColumn) {
+                createBtn.disabled = false;
+            } else {
+                createBtn.disabled = true;
+            }
+        }
+        
+        // Event listeners for controls
+        document.getElementById('geoLevel').addEventListener('change', checkReadyToCreate);
+        document.getElementById('joinColumn').addEventListener('change', checkReadyToCreate);
+        
+        // Create map button
+        document.getElementById('createMapBtn').addEventListener('click', createChoropleth);
+        
+        // Create the choropleth map
+        async function createChoropleth() {
+            const geoLevel = document.getElementById('geoLevel').value;
+            const joinColumn = document.getElementById('joinColumn').value;
+            
+            showMessage('Loading boundaries...', 'info');
+            
+            try {
+                // Load boundary data if not already loaded
+                if (!boundaries[geoLevel]) {
+                    const boundaryInfo = metadata.boundaries[geoLevel];
+                    const response = await fetch(`boundaries/${boundaryInfo.file}`);
+                    boundaries[geoLevel] = await response.json();
+                }
+                
+                const boundaryData = boundaries[geoLevel];
+                const idField = metadata.boundaries[geoLevel].id_field;
+                
+                // Create lookup for CSV data
+                const csvLookup = {};
+                csvData.forEach(row => {
+                    const key = String(row[joinColumn]).trim().toUpperCase();
+                    const value = parseFloat(row[selectedDataColumn]);
+                    if (!isNaN(value)) {
+                        csvLookup[key] = value;
+                    }
+                });
+                
+                // Calculate data range
+                const values = Object.values(csvLookup);
+                const minValue = Math.min(...values);
+                const maxValue = Math.max(...values);
+                
+                // Create color scale
+                const colorScale = chroma.scale(['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'])
+                    .domain([minValue, maxValue]);
+                
+                // Style function
+                function styleFeature(feature) {
+                    const id = feature.properties[idField];
+                    const lookupKey = String(id).trim().toUpperCase();
+                    const value = csvLookup[lookupKey];
+                    
+                    if (value !== undefined) {
+                        return {
+                            fillColor: colorScale(value).hex(),
+                            fillOpacity: 0.8,
+                            weight: 1,
+                            color: '#333',
+                            opacity: 0.8
+                        };
+                    } else {
+                        return {
+                            fillColor: '#666',
+                            fillOpacity: 0.3,
+                            weight: 1,
+                            color: '#333',
+                            opacity: 0.5
+                        };
+                    }
+                }
+                
+                // Remove existing layer
+                if (currentLayer) {
+                    map.removeLayer(currentLayer);
+                }
+                
+                // Add new layer
+                currentLayer = L.geoJSON(boundaryData, {
+                    style: styleFeature,
+                    onEachFeature: function(feature, layer) {
+                        const id = feature.properties[idField];
+                        const lookupKey = String(id).trim().toUpperCase();
+                        const value = csvLookup[lookupKey];
+                        const name = feature.properties.NAME || id;
+                        
+                        if (value !== undefined) {
+                            layer.bindPopup(`
+                                <strong>${name}</strong><br>
+                                ${selectedDataColumn}: ${value.toLocaleString()}
+                            `);
+                        }
+                    }
+                }).addTo(map);
+                
+                // Fit map to layer bounds
+                map.fitBounds(currentLayer.getBounds());
+                
+                // Create legend
+                createLegend(minValue, maxValue, colorScale);
+                
+                // Update stats
+                const matched = Object.keys(csvLookup).length;
+                const features = boundaryData.features.length;
+                
+                document.getElementById('statFeatures').textContent = features.toLocaleString();
+                document.getElementById('statMin').textContent = minValue.toLocaleString();
+                document.getElementById('statMax').textContent = maxValue.toLocaleString();
+                document.getElementById('statMatched').textContent = `${matched}/${features}`;
+                document.getElementById('statsBox').style.display = 'block';
+                
+                showMessage(`Map created! ${matched} features matched.`, 'success');
+                
+            } catch (error) {
+                showMessage('Error creating map: ' + error.message, 'error');
+            }
+        }
+        
+        // Create legend
+        function createLegend(min, max, colorScale) {
+            // Remove existing legend
+            const existingLegend = document.querySelector('.legend');
+            if (existingLegend) {
+                existingLegend.remove();
+            }
+            
+            const legend = document.createElement('div');
+            legend.className = 'legend';
+            legend.innerHTML = `<h3>Legend</h3>`;
+            
+            // Create 5 legend items
+            const steps = 5;
+            for (let i = 0; i < steps; i++) {
+                const value = min + (max - min) * (i / (steps - 1));
+                const color = colorScale(value).hex();
+                
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-color" style="background: ${color}"></div>
+                    <span>${value.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                `;
+                legend.appendChild(item);
+            }
+            
+            document.getElementById('map').appendChild(legend);
+        }
+        
+        // Show message
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            container.innerHTML = '';
+            container.appendChild(message);
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    setTimeout(() => message.remove(), 300);
+                }, 3000);
+            }
+        }
+        
+        // Initialize
+        loadMetadata();
+    </script>
+</body>
+</html>

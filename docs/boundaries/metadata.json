@@ -1,0 +1,41 @@
+{
+  "generated": "2024-01-26",
+  "description": "Lightweight boundary files for browser-based choropleth mapping",
+  "boundaries": {
+    "us_states": {
+      "file": "us_states.json",
+      "name": "US States",
+      "level": "state",
+      "size_kb": 272.2,
+      "id_field": "FIPS",
+      "join_fields": [
+        "FIPS",
+        "ABBR",
+        "NAME"
+      ]
+    },
+    "us_counties": {
+      "file": "us_counties.json",
+      "name": "US Counties",
+      "level": "county",
+      "size_kb": 1578.8,
+      "id_field": "GEOID",
+      "join_fields": [
+        "GEOID",
+        "STATEFP",
+        "NAME"
+      ]
+    },
+    "sample_zctas": {
+      "file": "sample_zctas.json",
+      "name": "Sample ZIP Codes",
+      "level": "zcta",
+      "size_kb": 118.6,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "note": "Limited sample for demo purposes"
+    }
+  }
+}
