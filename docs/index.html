@@ -668,9 +668,22 @@
                 // Smart zoom: fit to features with data, or all features if none match
                 if (featuresWithData.length > 0) {
                     const group = new L.featureGroup(featuresWithData);
-                    map.fitBounds(group.getBounds().pad(0.1));
+                    const bounds = group.getBounds();
+                    // Add more padding for small areas like county groups
+                    map.fitBounds(bounds.pad(0.2));
+                    
+                    // If it's a small area (like a few counties), zoom out a bit
+                    setTimeout(() => {
+                        const currentZoom = map.getZoom();
+                        if (currentZoom > 8 && featuresWithData.length < 20) {
+                            map.setZoom(8);
+                        }
+                    }, 100);
+                    
+                    console.log(`Zoomed to ${featuresWithData.length} features with data`);
                 } else {
                     map.fitBounds(currentLayer.getBounds());
+                    console.log('No features with data found, showing all boundaries');
                 }
                 
                 // Create legend
@@ -704,8 +717,11 @@
                     console.log('No matches found. CSV keys:', joinKeys.slice(0, 5));
                     console.log('Boundary IDs:', boundaryData.features.slice(0, 5).map(f => f.properties[idField]));
                     showMessage(`No data matched! Check that your join column (${joinColumn}) matches the geographic level.`, 'error');
+                } else if (features > 100 && matchedCount < 50) {
+                    // Likely showing subset of counties/zips on national map
+                    showMessage(`Success! Showing ${matchedCount} areas with data. Map zoomed to your data region.`, 'success');
                 } else if (matchedCount < features / 2) {
-                    showMessage(`Map created but only ${matchedCount}/${features} features matched. Some areas may be missing.`, 'info');
+                    showMessage(`Map created! ${matchedCount}/${features} features matched.`, 'info');
                 } else {
                     showMessage(`Map created! ${matchedCount} features matched.`, 'success');
                 }
