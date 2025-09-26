@@ -506,10 +506,23 @@
                 </label>
                 <select id="geoLevel">
                     <option value="">Select level...</option>
-                    <option value="us_states">US States (2-digit FIPS)</option>
-                    <option value="us_counties">US Counties (5-digit FIPS)</option>
-                    <option value="us_zctas">US ZIP Codes - COMPLETE (33,000+ ZIPs)</option>
-                    <option value="florida_zctas">Florida ZIP Codes (1,000+ ZIPs)</option>
+                    <optgroup label="States & Counties">
+                        <option value="us_states">US States (2-digit FIPS)</option>
+                        <option value="us_counties">US Counties (5-digit FIPS)</option>
+                    </optgroup>
+                    <optgroup label="ZIP Codes by Region">
+                        <option value="zctas_northeast">Northeast ZIP Codes (6,000+ ZIPs)</option>
+                        <option value="zctas_southeast">Southeast ZIP Codes (7,700+ ZIPs)</option>
+                        <option value="zctas_midwest">Midwest ZIP Codes (10,000+ ZIPs)</option>
+                        <option value="zctas_south">South ZIP Codes (3,800+ ZIPs)</option>
+                        <option value="zctas_west">West ZIP Codes (5,400+ ZIPs)</option>
+                    </optgroup>
+                    <optgroup label="ZIP Codes by State">
+                        <option value="zctas_fl">Florida ZIP Codes</option>
+                        <option value="zctas_tx">Texas ZIP Codes</option>
+                        <option value="zctas_ca">California ZIP Codes</option>
+                        <option value="zctas_ny">New York ZIP Codes</option>
+                    </optgroup>
                 </select>
             </div>
             
@@ -674,10 +687,10 @@
         async function loadMetadata() {
             try {
                 // Load all metadata files
-                const [fastResponse, hqResponse, completeResponse] = await Promise.all([
+                const [fastResponse, hqResponse, regionalResponse] = await Promise.all([
                     fetch('boundaries/metadata.json'),
                     fetch('boundaries_hq/metadata.json').catch(() => null),
-                    fetch('boundaries_complete/metadata.json').catch(() => null)
+                    fetch('boundaries_regional/metadata.json').catch(() => null)
                 ]);
                 
                 metadata = await fastResponse.json();
@@ -688,14 +701,14 @@
                     metadata.hq = hqMetadata;
                 }
                 
-                // Add complete boundaries metadata (ZIP codes)
-                if (completeResponse) {
-                    const completeMetadata = await completeResponse.json();
-                    // Merge complete boundaries into main metadata
-                    Object.assign(metadata.boundaries, completeMetadata.boundaries);
+                // Add regional boundaries metadata (regional ZIP codes)
+                if (regionalResponse) {
+                    const regionalMetadata = await regionalResponse.json();
+                    // Merge regional boundaries into main metadata
+                    Object.assign(metadata.boundaries, regionalMetadata.boundaries);
                 }
                 
-                showMessage('Ready! Upload any CSV file to create a choropleth map. Complete ZIP code support now available!', 'info');
+                showMessage('Ready! Upload any CSV file. ZIP codes organized by region for better performance!', 'info');
             } catch (error) {
                 showMessage('Error loading boundary data. Please refresh the page.', 'error');
             }
@@ -971,13 +984,15 @@
                     helpText.textContent = 'County-level data for all 3,000+ US counties';
                     joinHelp.textContent = 'Use 5-digit county FIPS codes (2 state + 3 county, like 01001 for Autauga County, AL)';
                     break;
-                case 'sample_zctas':
-                    helpText.textContent = 'Limited sample of ZIP code boundaries (demo only)';
-                    joinHelp.textContent = 'Use 5-digit ZIP codes (e.g., 33101)';
-                    break;
                 default:
-                    helpText.textContent = 'What type of boundaries does your data represent?';
-                    joinHelp.textContent = 'Which column contains your geographic identifiers?';
+                    // Handle ZIP code selections
+                    if (level && level.startsWith('zctas_')) {
+                        helpText.textContent = 'ZIP code data for the selected region';
+                        joinHelp.textContent = 'Use 5-digit ZIP codes (e.g., 10001, 33139, 90210)';
+                    } else {
+                        helpText.textContent = 'What type of boundaries does your data represent?';
+                        joinHelp.textContent = 'Which column contains your geographic identifiers?';
+                    }
             }
         }
         
@@ -1074,15 +1089,12 @@
                 // Determine which boundaries to load based on quality setting
                 let boundaryPath, boundaryInfo;
                 
-                // Check if this is a ZIP code layer
-                if (geoLevel === 'us_zctas' || geoLevel === 'florida_zctas') {
+                // Check if this is a ZIP code layer  
+                if (geoLevel.startsWith('zctas_')) {
                     boundaryInfo = metadata.boundaries[geoLevel];
-                    if (quality === 'hq' && geoLevel === 'us_zctas') {
-                        // Use high quality complete ZIP codes
-                        boundaryPath = 'boundaries_complete/us_zctas_hq.json';
-                    } else {
-                        // Use standard complete boundaries
-                        boundaryPath = `boundaries_complete/${boundaryInfo.file}`;
+                    if (boundaryInfo) {
+                        // Regional ZIP codes are in boundaries_regional folder
+                        boundaryPath = `boundaries_regional/${boundaryInfo.file}`;
                     }
                 } else if (quality === 'hq' && metadata.hq) {
                     // Use high quality boundaries for states/counties

@@ -1,0 +1,152 @@
+{
+  "generated": "2025-09-26",
+  "description": "Regional ZIP code boundaries for better performance",
+  "boundaries": {
+    "zctas_northeast": {
+      "file": "zctas_northeast.json",
+      "name": "Northeast ZIP Codes",
+      "level": "zcta",
+      "size_kb": 7687.0,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "states": [
+        "CT",
+        "MA",
+        "ME",
+        "NH",
+        "NJ",
+        "NY",
+        "PA",
+        "RI",
+        "VT"
+      ]
+    },
+    "zctas_southeast": {
+      "file": "zctas_southeast.json",
+      "name": "Southeast ZIP Codes",
+      "level": "zcta",
+      "size_kb": 17138.3,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "states": [
+        "AL",
+        "FL",
+        "GA",
+        "KY",
+        "MS",
+        "NC",
+        "SC",
+        "TN",
+        "VA",
+        "WV"
+      ]
+    },
+    "zctas_midwest": {
+      "file": "zctas_midwest.json",
+      "name": "Midwest ZIP Codes",
+      "level": "zcta",
+      "size_kb": 18655.3,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "states": [
+        "IL",
+        "IN",
+        "IA",
+        "MI",
+        "MN",
+        "MO",
+        "ND",
+        "NE",
+        "OH",
+        "SD",
+        "WI"
+      ]
+    },
+    "zctas_south": {
+      "file": "zctas_south.json",
+      "name": "South ZIP Codes",
+      "level": "zcta",
+      "size_kb": 8971.9,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "states": [
+        "AR",
+        "LA",
+        "OK",
+        "TX"
+      ]
+    },
+    "zctas_west": {
+      "file": "zctas_west.json",
+      "name": "West ZIP Codes",
+      "level": "zcta",
+      "size_kb": 16138.6,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "states": [
+        "AZ",
+        "CA",
+        "CO",
+        "ID",
+        "KS",
+        "MT",
+        "NV",
+        "NM",
+        "OR",
+        "UT",
+        "WA",
+        "WY"
+      ]
+    },
+    "zctas_fl": {
+      "file": "zctas_fl.json",
+      "name": "Florida ZIP Codes",
+      "level": "zcta",
+      "size_kb": 2293.5,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ]
+    },
+    "zctas_tx": {
+      "file": "zctas_tx.json",
+      "name": "Texas ZIP Codes",
+      "level": "zcta",
+      "size_kb": 7333.1,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ]
+    },
+    "zctas_ca": {
+      "file": "zctas_ca.json",
+      "name": "California ZIP Codes",
+      "level": "zcta",
+      "size_kb": 6034.2,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ]
+    },
+    "zctas_ny": {
+      "file": "zctas_ny.json",
+      "name": "New York ZIP Codes",
+      "level": "zcta",
+      "size_kb": 3770.1,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ]
+    }
+  }
+}

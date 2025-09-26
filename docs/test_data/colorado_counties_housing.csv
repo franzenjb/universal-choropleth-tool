@@ -1,0 +1,11 @@
+County_FIPS,County_Name,Median_Home_Value,Median_Rent,Homeownership_Rate,Housing_Vacancy_Rate,New_Construction_Permits,Affordability_Index
+08031,Denver County,567234,1876,48.3,7.2,3456,45
+08001,Adams County,423567,1543,65.7,5.8,2345,62
+08005,Arapahoe County,456789,1654,62.3,6.1,2876,58
+08059,Jefferson County,478234,1723,68.9,5.4,2134,55
+08013,Boulder County,687543,2134,59.8,8.3,1876,38
+08041,El Paso County,387654,1432,63.2,6.7,3234,68
+08035,Douglas County,523456,1987,78.4,4.2,2987,52
+08123,Weld County,367890,1234,69.5,5.9,3567,72
+08069,Larimer County,498765,1654,61.4,7.1,2456,56
+08043,Fremont County,234567,987,72.3,9.8,234,85

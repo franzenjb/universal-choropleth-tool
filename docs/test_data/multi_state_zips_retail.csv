@@ -1,0 +1,11 @@
+GEOID,State,City,Retail_Sales_Millions,Stores_Per_Capita,Restaurant_Density,Shopping_Centers,E_Commerce_Rate,Year
+98101,WA,Seattle,234.5,12.3,45.6,8,32.4,2023
+97201,OR,Portland,187.3,14.5,52.3,6,28.7,2023
+85001,AZ,Phoenix,156.8,18.2,38.9,12,25.3,2023
+80202,CO,Denver,198.4,13.7,48.2,7,30.1,2023
+89101,NV,Las Vegas,267.9,22.4,61.3,15,22.8,2023
+87501,NM,Santa Fe,89.3,19.8,42.7,4,35.2,2023
+59601,MT,Helena,45.6,16.3,28.4,2,38.9,2023
+83701,ID,Boise,112.3,15.6,35.8,5,31.5,2023
+84101,UT,Salt Lake City,178.9,14.2,41.3,8,29.8,2023
+82001,WY,Cheyenne,67.8,17.9,31.2,3,33.4,2023
