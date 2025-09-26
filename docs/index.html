@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Free Choropleth Maker - Create Data Maps from CSV Files</title>
+    <title>Free Choropleth Tool - Create Data Maps from ANY CSV File</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
@@ -18,6 +18,10 @@
             --border-color: #444;
             --hover-bg: #333;
             --message-bg: #1a1a1a;
+            --accent-color: #00d4ff;
+            --success-color: #4caf50;
+            --error-color: #ff6b6b;
+            --warning-color: #ffa726;
         }
         
         body.light-theme {
@@ -37,155 +41,111 @@
             background: #0a0a0a;
         }
         
-        body.light-theme {
-            background: #f0f0f0;
-        }
+        body.light-theme { background: #f0f0f0; }
         
-        /* Sidebar */
         .sidebar {
-            width: 420px;
+            width: 450px;
             background: var(--sidebar-bg);
             color: var(--text-color);
             padding: 25px;
             overflow-y: auto;
-            box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
         
-        .sidebar h1 {
-            font-size: 1.8em;
+        h1 {
+            font-size: 2em;
             margin-bottom: 10px;
             background: linear-gradient(90deg, #00d4ff, #7a5cff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        .sidebar .subtitle {
+        .subtitle {
             color: var(--text-color);
-            opacity: 0.7;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            opacity: 0.8;
+            margin-bottom: 25px;
+            line-height: 1.4;
         }
         
-        /* Help Section */
-        .help-section {
-            background: var(--control-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+        /* CSV Analysis Panel */
+        .analysis-panel {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
         }
         
-        .help-section h3 {
-            color: #00d4ff;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .analysis-panel h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.1em;
         }
         
-        .help-section ul {
-            list-style: none;
-            font-size: 0.85em;
-            line-height: 1.8;
-            opacity: 0.9;
-        }
-        
-        .help-section li {
-            padding-left: 20px;
-            position: relative;
-        }
-        
-        .help-section li:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            color: #00d4ff;
-        }
-        
-        /* Theme Toggle */
-        .theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-        
-        .theme-btn {
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .analysis-item {
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 6px;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .analysis-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .analysis-item.recommended {
+            border: 2px solid var(--success-color);
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .analysis-label {
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 4px;
+        }
+        
+        .analysis-detail {
             font-size: 0.85em;
-            transition: all 0.3s;
+            opacity: 0.8;
+            line-height: 1.4;
         }
         
-        .theme-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            border-color: #00d4ff;
-        }
-        
-        .theme-btn.active {
-            background: linear-gradient(90deg, #00d4ff, #7a5cff);
-            border-color: transparent;
-        }
-        
-        /* Upload Zone */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-            background: var(--control-bg);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upload-zone:hover {
-            border-color: #00d4ff;
-            transform: translateY(-2px);
-        }
-        
-        .upload-zone.has-file {
-            border-color: #4caf50;
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
-        }
-        
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
+        .sample-values {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85em;
+            color: var(--warning-color);
         }
         
         /* Controls */
         .control-group {
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
         
-        .control-group label {
+        label {
             display: block;
-            font-size: 0.85em;
-            color: var(--text-color);
-            opacity: 0.7;
             margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-color);
         }
         
-        .control-group .help-text {
-            font-size: 0.75em;
-            opacity: 0.6;
-            margin-top: 5px;
+        .help-text {
+            font-size: 0.85em;
+            opacity: 0.7;
             font-weight: normal;
             text-transform: none;
-            letter-spacing: normal;
+            letter-spacing: 0;
+            margin-top: 4px;
         }
         
         select {
@@ -195,58 +155,75 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-color);
-            font-size: 14px;
+            font-size: 1em;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
         
+        select:hover { border-color: var(--accent-color); }
         select:focus {
             outline: none;
-            border-color: #00d4ff;
+            border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
         }
         
-        /* Column selector */
+        /* Column grid */
         .column-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 8px;
-            max-height: 180px;
-            overflow-y: auto;
-            padding: 10px;
-            background: var(--message-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
         }
         
         .column-item {
-            padding: 8px;
+            padding: 12px;
             background: var(--control-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border: 2px solid transparent;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85em;
+            transition: all 0.3s;
             text-align: center;
+            font-size: 0.9em;
         }
         
         .column-item:hover {
             background: var(--hover-bg);
-            border-color: #00d4ff;
-            transform: translateY(-1px);
+            border-color: var(--accent-color);
         }
         
         .column-item.selected {
-            background: linear-gradient(90deg, #00d4ff, #7a5cff);
-            border-color: transparent;
-            color: white;
-            font-weight: 600;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(122, 92, 255, 0.2));
+            border-color: var(--accent-color);
         }
         
-        /* Buttons */
+        /* Upload zone */
+        .upload-zone {
+            border: 3px dashed var(--border-color);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+            background: var(--control-bg);
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--accent-color);
+            background: var(--hover-bg);
+        }
+        
+        .upload-zone.has-file {
+            border-color: var(--success-color);
+            background: rgba(76, 175, 80, 0.05);
+        }
+        
+        .upload-icon { font-size: 3em; margin-bottom: 15px; }
+        
+        /* Button */
         .btn-primary {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             background: linear-gradient(90deg, #00d4ff, #7a5cff);
             color: white;
             border: none;
@@ -270,6 +247,36 @@
             cursor: not-allowed;
         }
         
+        /* Export button */
+        .export-btn {
+            margin-top: 10px;
+            background: linear-gradient(90deg, #4caf50, #45a049);
+        }
+        
+        /* Theme toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .theme-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        
+        .theme-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: var(--accent-color);
+        }
+        
         /* Basemap selector */
         .basemap-selector {
             position: absolute;
@@ -286,14 +293,6 @@
             font-size: 0.85em;
             margin-bottom: 5px;
             display: block;
-        }
-        
-        .basemap-selector select {
-            background: #2a2a2a;
-            color: white;
-            border: 1px solid #444;
-            padding: 8px;
-            min-width: 150px;
         }
         
         /* Map container */
@@ -313,7 +312,6 @@
             color: white;
             min-width: 200px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
         }
         
         .legend h3 {
@@ -321,7 +319,7 @@
             font-size: 0.9em;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #00d4ff;
+            color: var(--accent-color);
         }
         
         .legend-item {
@@ -341,22 +339,34 @@
         
         /* Messages */
         .message {
-            padding: 12px;
-            border-radius: 6px;
+            padding: 15px;
+            border-radius: 8px;
             margin: 15px 0;
             font-size: 0.9em;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
         .message.success {
             background: rgba(76, 175, 80, 0.1);
-            color: #4caf50;
-            border: 1px solid #4caf50;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
         }
         
         .message.error {
             background: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-            border: 1px solid #ff6b6b;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
         }
         
         .message.info {
@@ -365,7 +375,63 @@
             border: 1px solid #60a5fa;
         }
         
-        /* Stats */
+        .message.warning {
+            background: rgba(255, 167, 38, 0.1);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+        
+        /* Help section */
+        .help-section {
+            background: var(--control-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .help-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .help-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .help-section li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .help-section li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+        
+        /* Sample data links */
+        .sample-data {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .sample-data a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 0.85em;
+            margin-right: 15px;
+        }
+        
+        .sample-data a:hover { text-decoration: underline; }
+        
+        /* Stats box */
         .stats-box {
             background: var(--message-bg);
             border-radius: 8px;
@@ -381,47 +447,25 @@
             font-size: 0.9em;
         }
         
-        .stat-label {
-            opacity: 0.7;
-        }
-        
+        .stat-label { opacity: 0.7; }
         .stat-value {
-            color: #00d4ff;
+            color: var(--accent-color);
             font-weight: 600;
-        }
-        
-        /* Sample data links */
-        .sample-data {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .sample-data a {
-            color: #00d4ff;
-            text-decoration: none;
-            font-size: 0.85em;
-            margin-right: 15px;
-        }
-        
-        .sample-data a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h1>🗺️ Choropleth Maker</h1>
-        <p class="subtitle">Transform your CSV data into beautiful choropleth maps instantly. No GIS software required, 100% free.</p>
+        <h1>🗺️ Choropleth Tool</h1>
+        <p class="subtitle">Transform ANY CSV data into beautiful choropleth maps instantly. No expensive GIS software needed - 100% free and browser-based.</p>
         
         <div class="help-section">
-            <h3>📚 How to Use</h3>
+            <h3>📚 Quick Start Guide</h3>
             <ul>
-                <li>Upload a CSV file with geographic data</li>
-                <li>Select the geographic level (States, Counties, ZIPs)</li>
-                <li>Choose the column that contains your geographic IDs</li>
-                <li>Pick a numeric column to visualize</li>
-                <li>Click Create Map - it's that simple!</li>
+                <li>Upload ANY CSV file with geographic data</li>
+                <li>We'll analyze it and suggest the best settings</li>
+                <li>Select which data to visualize on the map</li>
+                <li>Export to use in ArcGIS or other tools</li>
             </ul>
         </div>
         
@@ -433,28 +477,34 @@
         </div>
         
         <div class="sample-data">
-            <a href="test_data/us_states_economy.csv" download>📥 Sample: US States</a>
-            <a href="test_data/texas_counties_population.csv" download>📥 Sample: Counties</a>
+            <a href="test_data/midwest_states_agriculture.csv" download>📥 States Example</a>
+            <a href="test_data/texas_counties_population.csv" download>📥 Counties Example</a>
+            <a href="test_data/florida_zips_poverty.csv" download>📥 ZIP Codes Example</a>
+        </div>
+        
+        <div id="analysisPanel" class="analysis-panel">
+            <h3>🔍 CSV Analysis & Recommendations</h3>
+            <div id="analysisContent"></div>
         </div>
         
         <div id="controlsContainer" style="display: none;">
             <div class="control-group">
                 <label>
                     Geographic Level
-                    <div class="help-text">What type of boundaries does your data represent?</div>
+                    <div class="help-text" id="geoLevelHelp">What type of boundaries does your data represent?</div>
                 </label>
                 <select id="geoLevel">
                     <option value="">Select level...</option>
-                    <option value="us_states">US States (FIPS codes or abbreviations)</option>
-                    <option value="us_counties">US Counties (5-digit GEOID)</option>
-                    <option value="sample_zctas">Sample ZIP Codes (limited demo)</option>
+                    <option value="us_states">US States (2-digit FIPS)</option>
+                    <option value="us_counties">US Counties (5-digit FIPS)</option>
+                    <option value="sample_zctas">ZIP Codes (Sample only)</option>
                 </select>
             </div>
             
             <div class="control-group">
                 <label>
-                    Join Column
-                    <div class="help-text">Which column contains your geographic IDs?</div>
+                    Geographic ID Column
+                    <div class="help-text" id="joinColumnHelp">Which column contains your geographic identifiers?</div>
                 </label>
                 <select id="joinColumn">
                     <option value="">Select column...</option>
@@ -464,7 +514,7 @@
             <div class="control-group">
                 <label>
                     Data to Visualize
-                    <div class="help-text">Select a numeric column to map</div>
+                    <div class="help-text">Select a numeric column to create your choropleth map</div>
                 </label>
                 <div class="column-grid" id="dataColumns"></div>
             </div>
@@ -473,22 +523,22 @@
                 🚀 Create Map
             </button>
             
+            <button class="btn-primary export-btn" id="exportBtn" style="display: none;">
+                📥 Export to ArcGIS
+            </button>
+            
             <div id="statsBox" class="stats-box" style="display: none;">
                 <div class="stat-row">
                     <span class="stat-label">Features:</span>
                     <span class="stat-value" id="statFeatures">-</span>
                 </div>
                 <div class="stat-row">
-                    <span class="stat-label">Min:</span>
-                    <span class="stat-value" id="statMin">-</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Max:</span>
-                    <span class="stat-value" id="statMax">-</span>
-                </div>
-                <div class="stat-row">
                     <span class="stat-label">Matched:</span>
                     <span class="stat-value" id="statMatched">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Range:</span>
+                    <span class="stat-value" id="statRange">-</span>
                 </div>
             </div>
         </div>
@@ -506,10 +556,10 @@
     <div class="basemap-selector">
         <label>Basemap Style</label>
         <select id="basemapSelect" onchange="changeBasemap()">
-            <option value="dark">Dark (CARTO)</option>
-            <option value="light">Light (CARTO)</option>
-            <option value="osm">OpenStreetMap</option>
-            <option value="satellite">Satellite (ESRI)</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+            <option value="osm">Streets</option>
+            <option value="satellite">Satellite</option>
             <option value="topo">Topographic</option>
         </select>
     </div>
@@ -550,9 +600,11 @@
         let csvData = null;
         let boundaries = {};
         let currentLayer = null;
+        let currentLegend = null;
         let metadata = null;
         let selectedDataColumn = null;
         let csvLookup = {};
+        let currentGeoJSON = null;
         
         // Theme toggle
         function toggleTheme() {
@@ -581,7 +633,7 @@
             try {
                 const response = await fetch('boundaries/metadata.json');
                 metadata = await response.json();
-                showMessage('Ready! Upload a CSV file to begin. Try our sample data below the upload box.', 'info');
+                showMessage('Ready! Upload any CSV file to create a choropleth map. Try our sample files below the upload area.', 'info');
             } catch (error) {
                 showMessage('Error loading boundary data. Please refresh the page.', 'error');
             }
@@ -603,19 +655,151 @@
             e.preventDefault();
             dropZone.style.borderColor = '';
             const file = e.dataTransfer.files[0];
-            if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
+            if (file && file.name.endsWith('.csv')) {
                 processCSV(file);
-            } else {
-                showMessage('Please upload a CSV file', 'error');
             }
         });
         
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                processCSV(file);
-            }
+            if (file) processCSV(file);
         });
+        
+        // Analyze CSV to provide smart recommendations
+        function analyzeCSV(data, columns) {
+            const analysis = {
+                geographicLevel: null,
+                geoColumn: null,
+                dataColumns: [],
+                warnings: [],
+                recommendations: []
+            };
+            
+            // Sample first 10 rows for analysis
+            const sample = data.slice(0, Math.min(10, data.length));
+            
+            // Analyze each column
+            columns.forEach(col => {
+                const colLower = col.toLowerCase();
+                const values = sample.map(row => row[col]).filter(v => v !== null && v !== '');
+                
+                if (values.length === 0) return;
+                
+                // Check for geographic identifiers
+                const firstValue = String(values[0]).trim();
+                
+                // State detection
+                if (colLower.includes('state')) {
+                    if (firstValue.length === 2 && /^[A-Z]{2}$/i.test(firstValue)) {
+                        analysis.recommendations.push({
+                            type: 'state_abbr',
+                            column: col,
+                            level: 'us_states',
+                            confidence: 'high',
+                            message: `"${col}" contains 2-letter state abbreviations (e.g., ${values.slice(0,3).join(', ')})`,
+                            detail: 'Perfect for state-level choropleth maps'
+                        });
+                    } else if (/^\d{1,2}$/.test(firstValue)) {
+                        analysis.recommendations.push({
+                            type: 'state_fips',
+                            column: col,
+                            level: 'us_states',
+                            confidence: 'high',
+                            message: `"${col}" contains state FIPS codes (e.g., ${values.slice(0,3).join(', ')})`,
+                            detail: 'Standard census codes for US states'
+                        });
+                    }
+                }
+                
+                // Check for "State_Code" or similar
+                if (colLower.includes('state') && colLower.includes('code')) {
+                    if (/^\d{1,2}$/.test(firstValue)) {
+                        analysis.recommendations.push({
+                            type: 'state_fips',
+                            column: col,
+                            level: 'us_states',
+                            confidence: 'very_high',
+                            message: `"${col}" contains state FIPS codes (${values.slice(0,3).join(', ')})`,
+                            detail: 'These are standard 2-digit state identifiers used by the Census Bureau'
+                        });
+                    }
+                }
+                
+                // County detection (5-digit FIPS)
+                if (colLower.includes('county') || colLower.includes('geoid')) {
+                    if (/^\d{5}$/.test(firstValue)) {
+                        analysis.recommendations.push({
+                            type: 'county_fips',
+                            column: col,
+                            level: 'us_counties',
+                            confidence: 'high',
+                            message: `"${col}" contains 5-digit county FIPS codes (e.g., ${values.slice(0,3).join(', ')})`,
+                            detail: 'Standard codes for US counties (state + county FIPS)'
+                        });
+                    }
+                }
+                
+                // ZIP/ZCTA detection
+                if (colLower.includes('zip') || colLower.includes('zcta')) {
+                    if (/^\d{5}$/.test(firstValue)) {
+                        analysis.recommendations.push({
+                            type: 'zip',
+                            column: col,
+                            level: 'sample_zctas',
+                            confidence: 'medium',
+                            message: `"${col}" contains 5-digit ZIP codes (e.g., ${values.slice(0,3).join(', ')})`,
+                            detail: 'Note: Only sample ZIP codes available in demo'
+                        });
+                    }
+                }
+                
+                // Generic FIPS detection
+                if (colLower.includes('fips') || colLower.includes('code')) {
+                    if (/^\d+$/.test(firstValue)) {
+                        const digitCount = firstValue.length;
+                        if (digitCount <= 2) {
+                            analysis.recommendations.push({
+                                type: 'state_fips',
+                                column: col,
+                                level: 'us_states',
+                                confidence: 'medium',
+                                message: `"${col}" appears to contain ${digitCount}-digit codes (e.g., ${values.slice(0,3).join(', ')})`,
+                                detail: 'Likely state FIPS codes'
+                            });
+                        } else if (digitCount === 5) {
+                            analysis.recommendations.push({
+                                type: 'county_fips',
+                                column: col,
+                                level: 'us_counties',
+                                confidence: 'medium',
+                                message: `"${col}" contains 5-digit codes (e.g., ${values.slice(0,3).join(', ')})`,
+                                detail: 'Likely county FIPS codes'
+                            });
+                        }
+                    }
+                }
+                
+                // Check for numeric data columns
+                const numericValues = values.map(v => parseFloat(v)).filter(v => !isNaN(v));
+                if (numericValues.length > values.length / 2) {
+                    analysis.dataColumns.push({
+                        column: col,
+                        min: Math.min(...numericValues),
+                        max: Math.max(...numericValues),
+                        count: numericValues.length,
+                        sample: numericValues.slice(0, 3).map(v => v.toLocaleString()).join(', ')
+                    });
+                }
+            });
+            
+            // Sort recommendations by confidence
+            analysis.recommendations.sort((a, b) => {
+                const confOrder = { very_high: 0, high: 1, medium: 2, low: 3 };
+                return (confOrder[a.confidence] || 3) - (confOrder[b.confidence] || 3);
+            });
+            
+            return analysis;
+        }
         
         // Process CSV file
         function processCSV(file) {
@@ -625,14 +809,14 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     if (results.errors.length > 0) {
-                        showMessage(`CSV parsing warning: ${results.errors[0].message}`, 'error');
+                        showMessage(`CSV parsing error: ${results.errors[0].message}`, 'error');
                         return;
                     }
                     
                     csvData = results.data.filter(row => Object.values(row).some(v => v !== null && v !== ''));
                     
                     if (csvData.length === 0) {
-                        showMessage('CSV file is empty or invalid', 'error');
+                        showMessage('CSV file is empty', 'error');
                         return;
                     }
                     
@@ -641,77 +825,147 @@
                         <div class="upload-icon">✅</div>
                         <p style="font-size: 1.1em; font-weight: 600;">File Loaded!</p>
                         <p style="opacity: 0.7; font-size: 0.9em;">${file.name}</p>
-                        <p style="color: #00d4ff; font-size: 0.85em; margin-top: 10px;">${csvData.length} rows • ${Object.keys(csvData[0]).length} columns</p>
+                        <p style="color: #00d4ff; font-size: 0.85em; margin-top: 10px;">
+                            ${csvData.length} rows • ${Object.keys(csvData[0]).length} columns
+                        </p>
                     `;
                     
-                    populateControls();
+                    // Analyze CSV and show recommendations
+                    const columns = Object.keys(csvData[0]);
+                    const analysis = analyzeCSV(csvData, columns);
+                    displayAnalysis(analysis);
+                    
+                    populateControls(analysis);
                     document.getElementById('controlsContainer').style.display = 'block';
-                    showMessage(`Loaded ${csvData.length} rows. Now select your geographic level and columns.`, 'success');
-                },
-                error: function(error) {
-                    showMessage('Error parsing CSV: ' + error.message, 'error');
                 }
             });
         }
         
+        // Display analysis results
+        function displayAnalysis(analysis) {
+            const panel = document.getElementById('analysisPanel');
+            const content = document.getElementById('analysisContent');
+            
+            if (analysis.recommendations.length === 0) {
+                content.innerHTML = `
+                    <div class="message warning">
+                        ⚠️ No geographic columns detected automatically. 
+                        Please select your geographic level and ID column manually.
+                    </div>
+                `;
+            } else {
+                let html = '';
+                
+                // Show top recommendation
+                const topRec = analysis.recommendations[0];
+                html += `
+                    <div class="analysis-item recommended" onclick="applyRecommendation('${topRec.level}', '${topRec.column}')">
+                        <div class="analysis-label">✅ Recommended: ${topRec.message}</div>
+                        <div class="analysis-detail">${topRec.detail}</div>
+                        <div class="sample-values">Sample values: ${csvData.slice(0,3).map(r => r[topRec.column]).join(', ')}</div>
+                    </div>
+                `;
+                
+                // Show other options if available
+                if (analysis.recommendations.length > 1) {
+                    html += '<div style="margin-top: 10px; opacity: 0.7; font-size: 0.85em;">Other detected options:</div>';
+                    analysis.recommendations.slice(1).forEach(rec => {
+                        html += `
+                            <div class="analysis-item" onclick="applyRecommendation('${rec.level}', '${rec.column}')">
+                                <div class="analysis-label">${rec.message}</div>
+                                <div class="analysis-detail">${rec.detail}</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                content.innerHTML = html;
+            }
+            
+            panel.style.display = 'block';
+        }
+        
+        // Apply recommendation when clicked
+        function applyRecommendation(level, column) {
+            document.getElementById('geoLevel').value = level;
+            document.getElementById('joinColumn').value = column;
+            updateGeoLevelHelp();
+            checkReadyToCreate();
+            showMessage(`Applied recommendation: Using "${column}" with ${level.replace('_', ' ')} boundaries`, 'success');
+        }
+        
+        // Update help text based on selected level
+        function updateGeoLevelHelp() {
+            const level = document.getElementById('geoLevel').value;
+            const helpText = document.getElementById('geoLevelHelp');
+            const joinHelp = document.getElementById('joinColumnHelp');
+            
+            switch(level) {
+                case 'us_states':
+                    helpText.textContent = 'State-level data for all 50 US states + DC';
+                    joinHelp.textContent = 'Use 2-digit state FIPS codes (01, 02...56) or 2-letter abbreviations (AL, AK, etc.)';
+                    break;
+                case 'us_counties':
+                    helpText.textContent = 'County-level data for all 3,000+ US counties';
+                    joinHelp.textContent = 'Use 5-digit county FIPS codes (2 state + 3 county, like 01001 for Autauga County, AL)';
+                    break;
+                case 'sample_zctas':
+                    helpText.textContent = 'Limited sample of ZIP code boundaries (demo only)';
+                    joinHelp.textContent = 'Use 5-digit ZIP codes (e.g., 33101)';
+                    break;
+                default:
+                    helpText.textContent = 'What type of boundaries does your data represent?';
+                    joinHelp.textContent = 'Which column contains your geographic identifiers?';
+            }
+        }
+        
         // Populate control options
-        function populateControls() {
+        function populateControls(analysis) {
             const columns = Object.keys(csvData[0]);
             
             // Populate join column dropdown
             const joinSelect = document.getElementById('joinColumn');
             joinSelect.innerHTML = '<option value="">Select column...</option>';
             
-            // Try to auto-detect common geographic columns
-            const geoPatterns = ['fips', 'geoid', 'state', 'county', 'zip', 'zcta', 'code', 'id'];
-            let suggestedColumn = null;
-            
             columns.forEach(col => {
                 const option = document.createElement('option');
                 option.value = col;
                 
-                const colLower = col.toLowerCase();
-                const isLikelyGeo = geoPatterns.some(pattern => colLower.includes(pattern));
-                
-                if (isLikelyGeo && !suggestedColumn) {
-                    suggestedColumn = col;
-                    option.textContent = col + ' ⭐';
-                } else {
-                    option.textContent = col;
-                }
+                // Mark recommended columns
+                const isRecommended = analysis.recommendations.some(r => r.column === col);
+                option.textContent = col + (isRecommended ? ' ⭐ Recommended' : '');
                 
                 joinSelect.appendChild(option);
             });
             
-            // Auto-select suggested column
-            if (suggestedColumn) {
-                joinSelect.value = suggestedColumn;
+            // Auto-select top recommendation
+            if (analysis.recommendations.length > 0) {
+                const topRec = analysis.recommendations[0];
+                document.getElementById('geoLevel').value = topRec.level;
+                joinSelect.value = topRec.column;
+                updateGeoLevelHelp();
             }
             
-            // Populate data columns grid
+            // Populate data columns
             const dataColumnsDiv = document.getElementById('dataColumns');
             dataColumnsDiv.innerHTML = '';
             
-            columns.forEach(col => {
-                // Check if column has numeric data
-                const sample = csvData.slice(0, Math.min(10, csvData.length));
-                const numericValues = sample.map(row => {
-                    const val = row[col];
-                    return typeof val === 'number' ? val : parseFloat(val);
-                }).filter(v => !isNaN(v));
-                
-                if (numericValues.length > sample.length / 2) { // At least half are numbers
-                    const div = document.createElement('div');
-                    div.className = 'column-item';
-                    div.textContent = col;
-                    div.dataset.column = col;
-                    div.addEventListener('click', () => selectDataColumn(div, col));
-                    dataColumnsDiv.appendChild(div);
-                }
+            analysis.dataColumns.forEach(dataCol => {
+                const div = document.createElement('div');
+                div.className = 'column-item';
+                div.innerHTML = `
+                    <div style="font-weight: 600;">${dataCol.column}</div>
+                    <div style="font-size: 0.75em; opacity: 0.7; margin-top: 4px;">
+                        Range: ${dataCol.min.toLocaleString()} - ${dataCol.max.toLocaleString()}
+                    </div>
+                `;
+                div.dataset.column = dataCol.column;
+                div.addEventListener('click', () => selectDataColumn(div, dataCol.column));
+                dataColumnsDiv.appendChild(div);
             });
             
             if (dataColumnsDiv.children.length === 0) {
-                dataColumnsDiv.innerHTML = '<div style="padding: 20px; opacity: 0.6;">No numeric columns found in your CSV</div>';
+                dataColumnsDiv.innerHTML = '<div style="padding: 20px; opacity: 0.6;">No numeric columns found</div>';
             }
             
             checkReadyToCreate();
@@ -733,82 +987,63 @@
             const joinColumn = document.getElementById('joinColumn').value;
             const createBtn = document.getElementById('createMapBtn');
             
-            if (geoLevel && joinColumn && selectedDataColumn) {
-                createBtn.disabled = false;
-            } else {
-                createBtn.disabled = true;
-            }
+            createBtn.disabled = !(geoLevel && joinColumn && selectedDataColumn);
         }
         
-        // Event listeners for controls
-        document.getElementById('geoLevel').addEventListener('change', checkReadyToCreate);
+        // Event listeners
+        document.getElementById('geoLevel').addEventListener('change', () => {
+            updateGeoLevelHelp();
+            checkReadyToCreate();
+        });
         document.getElementById('joinColumn').addEventListener('change', checkReadyToCreate);
-        
-        // Create map button
         document.getElementById('createMapBtn').addEventListener('click', createChoropleth);
         
-        // Create the choropleth map
+        // Create choropleth map
         async function createChoropleth() {
             const geoLevel = document.getElementById('geoLevel').value;
             const joinColumn = document.getElementById('joinColumn').value;
             
-            showMessage('Creating your map...', 'info');
+            showMessage('Creating your choropleth map...', 'info');
             
             try {
-                // Load boundary data if not already loaded
+                // Load boundary data
                 if (!boundaries[geoLevel]) {
                     const boundaryInfo = metadata.boundaries[geoLevel];
-                    if (!boundaryInfo) {
-                        showMessage('Geographic level not available', 'error');
-                        return;
-                    }
                     const response = await fetch(`boundaries/${boundaryInfo.file}`);
-                    if (!response.ok) {
-                        throw new Error('Failed to load boundary data');
-                    }
                     boundaries[geoLevel] = await response.json();
                 }
                 
                 const boundaryData = boundaries[geoLevel];
                 const idField = metadata.boundaries[geoLevel].id_field;
                 
-                // Create lookup for CSV data with better matching
+                // Create lookup for CSV data
                 csvLookup = {};
-                let joinKeys = [];
+                let matchCount = 0;
                 
                 csvData.forEach(row => {
                     const rawKey = row[joinColumn];
-                    if (rawKey === null || rawKey === undefined || rawKey === '') return;
+                    if (rawKey === null || rawKey === undefined) return;
                     
-                    // Handle different key formats
                     let key = String(rawKey).trim();
                     
-                    // For FIPS codes, ensure 2-digit padding for states, 5-digit for counties
+                    // Handle FIPS padding
                     if (/^\d+$/.test(key)) {
-                        if (geoLevel === 'us_states' && key.length <= 2) {
+                        if (geoLevel === 'us_states') {
                             key = key.padStart(2, '0');
-                        } else if (geoLevel === 'us_counties' && key.length <= 5) {
+                        } else if (geoLevel === 'us_counties') {
                             key = key.padStart(5, '0');
                         }
                     }
                     
-                    joinKeys.push(key);
                     const value = parseFloat(row[selectedDataColumn]);
-                    
                     if (!isNaN(value)) {
-                        // Store multiple versions for flexible matching
                         csvLookup[key] = value;
                         csvLookup[key.toUpperCase()] = value;
                         csvLookup[key.toLowerCase()] = value;
                     }
                 });
                 
-                if (Object.keys(csvLookup).length === 0) {
-                    showMessage(`No valid numeric data found in column "${selectedDataColumn}"`, 'error');
-                    return;
-                }
-                
-                // Calculate data range
+                // Calculate statistics
                 const values = Object.values(csvLookup);
                 const uniqueValues = [...new Set(values)];
                 const minValue = Math.min(...uniqueValues);
@@ -818,288 +1053,148 @@
                 const colorScale = chroma.scale(['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'])
                     .domain([minValue, maxValue]);
                 
-                // Style function
-                function styleFeature(feature) {
-                    const id = feature.properties[idField];
-                    // Try different key formats for matching
-                    let value = csvLookup[id] || 
-                               csvLookup[String(id).toUpperCase()] || 
-                               csvLookup[String(id).toLowerCase()] ||
-                               csvLookup[String(id).padStart(2, '0')] ||
-                               csvLookup[String(id).padStart(5, '0')];
-                    
-                    if (value !== undefined) {
-                        return {
-                            fillColor: colorScale(value).hex(),
-                            fillOpacity: 0.8,
-                            weight: 1,
-                            color: '#333',
-                            opacity: 0.8
-                        };
-                    } else {
-                        return {
-                            fillColor: '#666',
-                            fillOpacity: 0.3,
-                            weight: 1,
-                            color: '#333',
-                            opacity: 0.5
-                        };
-                    }
-                }
-                
-                // Remove existing layer
+                // Clear existing layer
                 if (currentLayer) {
                     map.removeLayer(currentLayer);
                 }
                 
-                // Track which features have data for smart zoom
+                // Create new layer
                 let featuresWithData = [];
-                
-                // Add new layer
                 currentLayer = L.geoJSON(boundaryData, {
-                    style: styleFeature,
-                    onEachFeature: function(feature, layer) {
+                    style: function(feature) {
                         const id = feature.properties[idField];
-                        // Try multiple formats for matching
-                        let value = csvLookup[id] || 
-                                   csvLookup[String(id).toUpperCase()] || 
-                                   csvLookup[String(id).toLowerCase()] ||
-                                   csvLookup[String(id).padStart(2, '0')] ||
-                                   csvLookup[String(id).padStart(5, '0')];
-                        
-                        const name = feature.properties.NAME || feature.properties.ABBR || id;
+                        const value = csvLookup[id] || csvLookup[String(id).toUpperCase()] || csvLookup[String(id).toLowerCase()];
                         
                         if (value !== undefined) {
-                            featuresWithData.push(layer);
-                            
-                            // Create nice popup with formatted data
-                            const formattedValue = typeof value === 'number' 
-                                ? value.toLocaleString(undefined, {
-                                    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
-                                    maximumFractionDigits: 2
-                                  })
-                                : value;
-                            
-                            // Make column name more readable
-                            const readableColumn = selectedDataColumn
-                                .replace(/_/g, ' ')
-                                .replace(/([A-Z])/g, ' $1')
-                                .trim()
-                                .split(' ')
-                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                .join(' ');
-                            
-                            layer.bindPopup(`
-                                <div style="font-size: 14px; padding: 5px;">
-                                    <strong style="font-size: 16px;">${name}</strong><br>
-                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd;">
-                                        <strong>${readableColumn}:</strong><br>
-                                        <span style="font-size: 18px; color: #2c7fb8;">${formattedValue}</span>
-                                    </div>
-                                </div>
-                            `);
-                            
-                            // Add hover effect
-                            layer.on('mouseover', function(e) {
-                                this.setStyle({
-                                    weight: 2,
-                                    color: '#000',
-                                    fillOpacity: 0.9
-                                });
-                            });
-                            
-                            layer.on('mouseout', function(e) {
-                                currentLayer.resetStyle(e.target);
-                            });
+                            matchCount++;
+                            featuresWithData.push(feature);
+                            return {
+                                fillColor: colorScale(value).hex(),
+                                fillOpacity: 0.8,
+                                weight: 1,
+                                color: '#333',
+                                opacity: 0.8
+                            };
+                        } else {
+                            return {
+                                fillColor: '#666',
+                                fillOpacity: 0.3,
+                                weight: 1,
+                                color: '#333',
+                                opacity: 0.5
+                            };
                         }
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const id = feature.properties[idField];
+                        const value = csvLookup[id] || csvLookup[String(id).toUpperCase()];
+                        const name = feature.properties.NAME || feature.properties.ABBR || id;
+                        
+                        let popup = `<strong>${name}</strong><br>`;
+                        if (value !== undefined) {
+                            popup += `${selectedDataColumn}: ${value.toLocaleString()}`;
+                        } else {
+                            popup += `No data available`;
+                        }
+                        layer.bindPopup(popup);
                     }
                 }).addTo(map);
                 
-                // Smart zoom: fit to features with data
+                // Store current GeoJSON for export
+                currentGeoJSON = boundaryData;
+                
+                // Zoom to data extent
                 if (featuresWithData.length > 0) {
-                    const group = new L.featureGroup(featuresWithData);
-                    const bounds = group.getBounds();
-                    map.fitBounds(bounds.pad(0.2));
-                    
-                    // Prevent over-zooming for small areas
-                    setTimeout(() => {
-                        const currentZoom = map.getZoom();
-                        if (currentZoom > 8 && featuresWithData.length < 20) {
-                            map.setZoom(8);
-                        }
-                    }, 100);
-                } else {
-                    map.fitBounds(currentLayer.getBounds());
+                    const bounds = L.geoJSON({
+                        type: 'FeatureCollection',
+                        features: featuresWithData
+                    }).getBounds();
+                    map.fitBounds(bounds.pad(0.1));
                 }
                 
                 // Create legend
                 createLegend(minValue, maxValue, colorScale);
                 
-                // Count actual matches
-                let matchedCount = 0;
-                boundaryData.features.forEach(feature => {
-                    const id = feature.properties[idField];
-                    const value = csvLookup[id] || 
-                                 csvLookup[String(id).toUpperCase()] || 
-                                 csvLookup[String(id).toLowerCase()] ||
-                                 csvLookup[String(id).padStart(2, '0')] ||
-                                 csvLookup[String(id).padStart(5, '0')];
-                    if (value !== undefined) {
-                        matchedCount++;
-                    }
-                });
-                
                 // Update stats
-                const features = boundaryData.features.length;
-                
-                document.getElementById('statFeatures').textContent = features.toLocaleString();
-                document.getElementById('statMin').textContent = minValue.toLocaleString(undefined, {
-                    maximumFractionDigits: 2
-                });
-                document.getElementById('statMax').textContent = maxValue.toLocaleString(undefined, {
-                    maximumFractionDigits: 2
-                });
-                document.getElementById('statMatched').textContent = `${matchedCount}/${features}`;
+                document.getElementById('statFeatures').textContent = boundaryData.features.length;
+                document.getElementById('statMatched').textContent = `${matchCount} / ${Object.keys(csvLookup).length / 3}`;
+                document.getElementById('statRange').textContent = `${minValue.toLocaleString()} - ${maxValue.toLocaleString()}`;
                 document.getElementById('statsBox').style.display = 'block';
                 
-                // Provide helpful feedback
-                if (matchedCount === 0) {
-                    showMessage(`No data matched! Make sure your "${joinColumn}" column contains valid ${geoLevel === 'us_states' ? 'state FIPS codes or abbreviations' : geoLevel === 'us_counties' ? 'county GEOIDs (5-digit codes)' : 'geographic IDs'}.`, 'error');
-                } else if (features > 100 && matchedCount < 50) {
-                    showMessage(`Success! Showing ${matchedCount} areas with data. The map has zoomed to your data region.`, 'success');
-                } else if (matchedCount < features / 2) {
-                    showMessage(`Map created! ${matchedCount} of ${features} areas matched. Unmatched areas shown in gray.`, 'info');
-                } else {
-                    showMessage(`Perfect! ${matchedCount} areas mapped successfully.`, 'success');
-                }
+                // Show export button
+                document.getElementById('exportBtn').style.display = 'block';
+                
+                showMessage(`Success! Created choropleth with ${matchCount} matched features.`, 'success');
                 
             } catch (error) {
-                console.error('Map creation error:', error);
-                showMessage('Error creating map: ' + error.message, 'error');
+                showMessage(`Error creating map: ${error.message}`, 'error');
             }
         }
         
         // Create legend
-        function createLegend(min, max, colorScale) {
-            // Remove existing legend
-            const existingLegend = document.querySelector('.legend');
-            if (existingLegend) {
-                existingLegend.remove();
+        function createLegend(minValue, maxValue, colorScale) {
+            if (currentLegend) {
+                map.removeControl(currentLegend);
             }
             
-            // Make column name readable for legend
-            const readableColumn = selectedDataColumn
-                .replace(/_/g, ' ')
-                .replace(/([A-Z])/g, ' $1')
-                .trim()
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                .join(' ');
+            currentLegend = L.control({position: 'bottomright'});
             
-            const legend = document.createElement('div');
-            legend.className = 'legend';
-            legend.innerHTML = `
-                <h3>${readableColumn}</h3>
-                <button id="exportBtn" style="
-                    background: linear-gradient(90deg, #4caf50, #66bb6a);
-                    color: white;
-                    border: none;
-                    padding: 8px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    margin-bottom: 15px;
-                    width: 100%;
-                    font-size: 12px;
-                    font-weight: 600;
-                ">📥 Export for ArcGIS</button>
-            `;
-            
-            // Create 5 legend items from high to low
-            const steps = 5;
-            for (let i = steps - 1; i >= 0; i--) {
-                const value = min + (max - min) * (i / (steps - 1));
-                const color = colorScale(value).hex();
+            currentLegend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'legend');
+                const range = maxValue - minValue;
+                const steps = 5;
                 
-                const item = document.createElement('div');
-                item.className = 'legend-item';
+                div.innerHTML = `<h3>${selectedDataColumn}</h3>`;
                 
-                // Format the value nicely
-                const formattedValue = value.toLocaleString(undefined, {
-                    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
-                    maximumFractionDigits: value > 1000 ? 0 : 2
-                });
+                for (let i = 0; i < steps; i++) {
+                    const value = minValue + (range * i / (steps - 1));
+                    const color = colorScale(value).hex();
+                    const label = value.toLocaleString(undefined, {maximumFractionDigits: 1});
+                    
+                    div.innerHTML += `
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: ${color}"></div>
+                            <span>${label}</span>
+                        </div>
+                    `;
+                }
                 
-                item.innerHTML = `
-                    <div class="legend-color" style="background: ${color}"></div>
-                    <span>${formattedValue}</span>
-                `;
-                legend.appendChild(item);
-            }
+                return div;
+            };
             
-            // Add no data item
-            const noDataItem = document.createElement('div');
-            noDataItem.className = 'legend-item';
-            noDataItem.innerHTML = `
-                <div class="legend-color" style="background: #666; opacity: 0.3;"></div>
-                <span style="color: #999;">No data</span>
-            `;
-            legend.appendChild(noDataItem);
-            
-            document.getElementById('map').appendChild(legend);
-            
-            // Add export functionality
-            document.getElementById('exportBtn').addEventListener('click', exportForArcGIS);
+            currentLegend.addTo(map);
         }
         
-        // Export GeoJSON for ArcGIS
-        function exportForArcGIS() {
-            if (!currentLayer) {
+        // Export to ArcGIS
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            if (!currentGeoJSON || !csvLookup) {
                 showMessage('No map to export', 'error');
                 return;
             }
             
-            const geoLevel = document.getElementById('geoLevel').value;
+            // Add CSV data to GeoJSON properties
+            const exportGeoJSON = JSON.parse(JSON.stringify(currentGeoJSON));
+            const idField = metadata.boundaries[document.getElementById('geoLevel').value].id_field;
             
-            // Create enriched GeoJSON with data values
-            const exportData = {
-                type: "FeatureCollection",
-                features: []
-            };
-            
-            currentLayer.eachLayer(function(layer) {
-                const feature = layer.feature;
-                const id = feature.properties[metadata.boundaries[geoLevel].id_field];
+            exportGeoJSON.features.forEach(feature => {
+                const id = feature.properties[idField];
+                const value = csvLookup[id] || csvLookup[String(id).toUpperCase()];
                 
-                // Get the data value
-                const value = csvLookup[id] || 
-                             csvLookup[String(id).toUpperCase()] || 
-                             csvLookup[String(id).toLowerCase()] ||
-                             csvLookup[String(id).padStart(2, '0')] ||
-                             csvLookup[String(id).padStart(5, '0')];
-                
-                // Clone the feature and add the data value
-                const exportFeature = JSON.parse(JSON.stringify(feature));
-                exportFeature.properties[selectedDataColumn] = value || null;
-                exportFeature.properties['DATA_VALUE'] = value || null;
-                exportFeature.properties['DATA_FIELD'] = selectedDataColumn;
-                
-                exportData.features.push(exportFeature);
+                if (value !== undefined) {
+                    feature.properties[selectedDataColumn] = value;
+                }
             });
             
-            // Download the file
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json'});
+            // Download
+            const blob = new Blob([JSON.stringify(exportGeoJSON, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `choropleth_${selectedDataColumn}_${new Date().toISOString().split('T')[0]}.geojson`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `choropleth_${selectedDataColumn}_${new Date().getTime()}.geojson`;
+            a.click();
             
-            showMessage('✅ GeoJSON exported! Use "JSON to Features" tool in ArcGIS Pro to import.', 'success');
-        }
+            showMessage('GeoJSON exported! Upload to ArcGIS Online to use in your maps.', 'success');
+        });
         
         // Show message
         function showMessage(text, type) {
@@ -1107,15 +1202,11 @@
             const message = document.createElement('div');
             message.className = `message ${type}`;
             message.textContent = text;
-            container.innerHTML = '';
             container.appendChild(message);
             
-            if (type !== 'error') {
-                setTimeout(() => {
-                    message.style.opacity = '0';
-                    setTimeout(() => message.remove(), 300);
-                }, 5000);
-            }
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
         }
         
         // Initialize
