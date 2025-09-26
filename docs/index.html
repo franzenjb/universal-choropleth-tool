@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="zip_detection.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -838,17 +839,32 @@
                     }
                 }
                 
-                // ZIP/ZCTA detection
+                // ZIP/ZCTA detection with SMART region analysis
                 if (colLower.includes('zip') || colLower.includes('zcta')) {
                     if (/^\d{5}$/.test(firstValue)) {
-                        analysis.recommendations.push({
-                            type: 'zip',
-                            column: col,
-                            level: 'sample_zctas',
-                            confidence: 'medium',
-                            message: `"${col}" contains 5-digit ZIP codes (e.g., ${values.slice(0,3).join(', ')})`,
-                            detail: 'Note: Only sample ZIP codes available in demo'
-                        });
+                        // Analyze which region/state these ZIPs belong to
+                        const zipAnalysis = analyzeZipCodes(values);
+                        
+                        if (zipAnalysis.suggestedLevel) {
+                            analysis.recommendations.push({
+                                type: 'zip',
+                                column: col,
+                                level: zipAnalysis.suggestedLevel,
+                                confidence: zipAnalysis.confidence,
+                                message: `"${col}" contains ZIP codes - ${zipAnalysis.message}`,
+                                detail: zipAnalysis.detail
+                            });
+                        } else {
+                            // Fallback if analysis fails
+                            analysis.recommendations.push({
+                                type: 'zip',
+                                column: col,
+                                level: 'zctas_northeast',
+                                confidence: 'medium',
+                                message: `"${col}" contains 5-digit ZIP codes (e.g., ${values.slice(0,3).join(', ')})`,
+                                detail: 'Select the appropriate regional ZIP file for your data'
+                            });
+                        }
                     }
                 }
                 
@@ -881,14 +897,26 @@
                 // FALLBACK: Any 5-digit numeric column could be county FIPS or ZIP
                 if (!colLower.includes('zip') && !colLower.includes('county') && !colLower.includes('fips')) {
                     if (/^\d{5}$/.test(firstValue)) {
-                        // Check if it looks like ZIP (starts with 0-9) or county FIPS
-                        const allNumeric = values.every(v => /^\d{5}$/.test(String(v)));
-                        if (allNumeric) {
+                        // Check if it looks like ZIP codes based on prefixes
+                        const zipAnalysis = analyzeZipCodes(values.slice(0, 100)); // Sample first 100
+                        
+                        if (zipAnalysis.suggestedLevel && zipAnalysis.confidence !== 'low') {
+                            // Looks like ZIP codes based on prefix analysis
+                            analysis.recommendations.push({
+                                type: 'zip_detected',
+                                column: col,
+                                level: zipAnalysis.suggestedLevel,
+                                confidence: 'medium',
+                                message: `"${col}" appears to be ZIP codes - ${zipAnalysis.message}`,
+                                detail: `🔍 Auto-detected: ${zipAnalysis.detail}`
+                            });
+                        } else {
+                            // Could be county FIPS or ZIPs
                             analysis.recommendations.push({
                                 type: 'generic_5digit',
                                 column: col,
                                 level: 'us_counties',
-                                confidence: 'medium',
+                                confidence: 'low',
                                 message: `"${col}" has 5-digit codes - could be County FIPS or ZIP (${values.slice(0,3).join(', ')})`,
                                 detail: '💡 Try US Counties first, then ZIP codes if that doesn\'t work'
                             });
