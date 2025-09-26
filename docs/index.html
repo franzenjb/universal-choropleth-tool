@@ -546,11 +546,20 @@
                 
                 // Create lookup for CSV data
                 const csvLookup = {};
+                let joinKeys = [];
                 csvData.forEach(row => {
-                    const key = String(row[joinColumn]).trim().toUpperCase();
+                    // Handle both numeric FIPS (01, 02) and string values
+                    let key = String(row[joinColumn]).trim();
+                    // Pad single digit FIPS codes with leading zero
+                    if (/^\d+$/.test(key) && key.length === 1) {
+                        key = '0' + key;
+                    }
+                    joinKeys.push(key);
                     const value = parseFloat(row[selectedDataColumn]);
                     if (!isNaN(value)) {
                         csvLookup[key] = value;
+                        // Also store uppercase version for matching
+                        csvLookup[key.toUpperCase()] = value;
                     }
                 });
                 
@@ -566,8 +575,10 @@
                 // Style function
                 function styleFeature(feature) {
                     const id = feature.properties[idField];
-                    const lookupKey = String(id).trim().toUpperCase();
-                    const value = csvLookup[lookupKey];
+                    // Try different key formats for matching
+                    let value = csvLookup[id] || 
+                               csvLookup[String(id).toUpperCase()] || 
+                               csvLookup[String(id).padStart(2, '0')];
                     
                     if (value !== undefined) {
                         return {
@@ -617,17 +628,39 @@
                 // Create legend
                 createLegend(minValue, maxValue, colorScale);
                 
+                // Count actual matches
+                let matchedCount = 0;
+                let unmatchedBoundaries = [];
+                boundaryData.features.forEach(feature => {
+                    const id = feature.properties[idField];
+                    const value = csvLookup[id] || 
+                                 csvLookup[String(id).toUpperCase()] || 
+                                 csvLookup[String(id).padStart(2, '0')];
+                    if (value !== undefined) {
+                        matchedCount++;
+                    } else {
+                        unmatchedBoundaries.push(id);
+                    }
+                });
+                
                 // Update stats
-                const matched = Object.keys(csvLookup).length;
                 const features = boundaryData.features.length;
                 
                 document.getElementById('statFeatures').textContent = features.toLocaleString();
                 document.getElementById('statMin').textContent = minValue.toLocaleString();
                 document.getElementById('statMax').textContent = maxValue.toLocaleString();
-                document.getElementById('statMatched').textContent = `${matched}/${features}`;
+                document.getElementById('statMatched').textContent = `${matchedCount}/${features}`;
                 document.getElementById('statsBox').style.display = 'block';
                 
-                showMessage(`Map created! ${matched} features matched.`, 'success');
+                if (matchedCount === 0) {
+                    console.log('No matches found. CSV keys:', joinKeys.slice(0, 5));
+                    console.log('Boundary IDs:', boundaryData.features.slice(0, 5).map(f => f.properties[idField]));
+                    showMessage(`No data matched! Check that your join column (${joinColumn}) matches the geographic level.`, 'error');
+                } else if (matchedCount < features / 2) {
+                    showMessage(`Map created but only ${matchedCount}/${features} features matched. Some areas may be missing.`, 'info');
+                } else {
+                    showMessage(`Map created! ${matchedCount} features matched.`, 'success');
+                }
                 
             } catch (error) {
                 showMessage('Error creating map: ' + error.message, 'error');
