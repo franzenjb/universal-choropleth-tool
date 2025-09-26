@@ -1,0 +1,39 @@
+{
+  "generated": "2025-09-26",
+  "description": "Complete US boundary files including all ZIP codes",
+  "boundaries": {
+    "us_zctas": {
+      "file": "us_zctas.json",
+      "name": "US ZIP Codes - Complete (Simplified)",
+      "level": "zcta",
+      "size_mb": 39.6,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "note": "Complete coverage"
+    },
+    "us_zctas_hq": {
+      "file": "us_zctas_hq.json",
+      "name": "US ZIP Codes - Complete (High Quality)",
+      "level": "zcta",
+      "size_mb": 140.2,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "note": "Complete coverage"
+    },
+    "florida_zctas": {
+      "file": "florida_zctas.json",
+      "name": "Florida ZIP Codes (Sample)",
+      "level": "zcta",
+      "size_mb": 0.8,
+      "id_field": "ZCTA",
+      "join_fields": [
+        "ZCTA"
+      ],
+      "note": "Regional sample"
+    }
+  }
+}

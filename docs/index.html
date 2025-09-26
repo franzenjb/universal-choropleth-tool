@@ -490,6 +490,17 @@
         <div id="controlsContainer" style="display: none;">
             <div class="control-group">
                 <label>
+                    Map Title (Optional)
+                    <div class="help-text">Give your map a descriptive title</div>
+                </label>
+                <input type="text" id="mapTitle" placeholder="e.g., Midwest Agricultural Production by State" 
+                       style="width: 100%; padding: 12px; background: var(--control-bg); 
+                              border: 1px solid var(--border-color); border-radius: 8px; 
+                              color: var(--text-color); font-size: 1em;">
+            </div>
+            
+            <div class="control-group">
+                <label>
                     Geographic Level
                     <div class="help-text" id="geoLevelHelp">What type of boundaries does your data represent?</div>
                 </label>
@@ -497,8 +508,28 @@
                     <option value="">Select level...</option>
                     <option value="us_states">US States (2-digit FIPS)</option>
                     <option value="us_counties">US Counties (5-digit FIPS)</option>
-                    <option value="sample_zctas">ZIP Codes (Sample only)</option>
+                    <option value="us_zctas">US ZIP Codes - COMPLETE (33,000+ ZIPs)</option>
+                    <option value="florida_zctas">Florida ZIP Codes (1,000+ ZIPs)</option>
                 </select>
+            </div>
+            
+            <div class="control-group">
+                <label>
+                    Boundary Quality
+                    <div class="help-text">Choose between fast loading or high quality for ArcGIS export</div>
+                </label>
+                <div style="display: flex; gap: 10px;">
+                    <label style="flex: 1; padding: 10px; background: var(--control-bg); border-radius: 8px; 
+                                  border: 2px solid var(--border-color); cursor: pointer; text-align: center;">
+                        <input type="radio" name="quality" value="fast" checked> 
+                        ⚡ Fast (smaller files)
+                    </label>
+                    <label style="flex: 1; padding: 10px; background: var(--control-bg); border-radius: 8px; 
+                                  border: 2px solid var(--border-color); cursor: pointer; text-align: center;">
+                        <input type="radio" name="quality" value="hq"> 
+                        ✨ High Quality (for ArcGIS)
+                    </label>
+                </div>
             </div>
             
             <div class="control-group">
@@ -517,6 +548,17 @@
                     <div class="help-text">Select a numeric column to create your choropleth map</div>
                 </label>
                 <div class="column-grid" id="dataColumns"></div>
+            </div>
+            
+            <div class="control-group">
+                <label>
+                    Data Units (Optional)
+                    <div class="help-text">What units does your data represent?</div>
+                </label>
+                <input type="text" id="dataUnits" placeholder="e.g., millions of acres, %, dollars" 
+                       style="width: 100%; padding: 12px; background: var(--control-bg); 
+                              border: 1px solid var(--border-color); border-radius: 8px; 
+                              color: var(--text-color); font-size: 1em;">
             </div>
             
             <button class="btn-primary" id="createMapBtn" disabled>
@@ -631,9 +673,29 @@
         // Load metadata on startup
         async function loadMetadata() {
             try {
-                const response = await fetch('boundaries/metadata.json');
-                metadata = await response.json();
-                showMessage('Ready! Upload any CSV file to create a choropleth map. Try our sample files below the upload area.', 'info');
+                // Load all metadata files
+                const [fastResponse, hqResponse, completeResponse] = await Promise.all([
+                    fetch('boundaries/metadata.json'),
+                    fetch('boundaries_hq/metadata.json').catch(() => null),
+                    fetch('boundaries_complete/metadata.json').catch(() => null)
+                ]);
+                
+                metadata = await fastResponse.json();
+                
+                // Add high quality metadata if available
+                if (hqResponse) {
+                    const hqMetadata = await hqResponse.json();
+                    metadata.hq = hqMetadata;
+                }
+                
+                // Add complete boundaries metadata (ZIP codes)
+                if (completeResponse) {
+                    const completeMetadata = await completeResponse.json();
+                    // Merge complete boundaries into main metadata
+                    Object.assign(metadata.boundaries, completeMetadata.boundaries);
+                }
+                
+                showMessage('Ready! Upload any CSV file to create a choropleth map. Complete ZIP code support now available!', 'info');
             } catch (error) {
                 showMessage('Error loading boundary data. Please refresh the page.', 'error');
             }
@@ -1002,19 +1064,51 @@
         async function createChoropleth() {
             const geoLevel = document.getElementById('geoLevel').value;
             const joinColumn = document.getElementById('joinColumn').value;
+            const quality = document.querySelector('input[name="quality"]:checked')?.value || 'fast';
+            const mapTitle = document.getElementById('mapTitle').value;
+            const dataUnits = document.getElementById('dataUnits').value;
             
             showMessage('Creating your choropleth map...', 'info');
             
             try {
-                // Load boundary data
-                if (!boundaries[geoLevel]) {
-                    const boundaryInfo = metadata.boundaries[geoLevel];
-                    const response = await fetch(`boundaries/${boundaryInfo.file}`);
-                    boundaries[geoLevel] = await response.json();
+                // Determine which boundaries to load based on quality setting
+                let boundaryPath, boundaryInfo;
+                
+                // Check if this is a ZIP code layer
+                if (geoLevel === 'us_zctas' || geoLevel === 'florida_zctas') {
+                    boundaryInfo = metadata.boundaries[geoLevel];
+                    if (quality === 'hq' && geoLevel === 'us_zctas') {
+                        // Use high quality complete ZIP codes
+                        boundaryPath = 'boundaries_complete/us_zctas_hq.json';
+                    } else {
+                        // Use standard complete boundaries
+                        boundaryPath = `boundaries_complete/${boundaryInfo.file}`;
+                    }
+                } else if (quality === 'hq' && metadata.hq) {
+                    // Use high quality boundaries for states/counties
+                    boundaryInfo = metadata.hq.boundaries[geoLevel];
+                    if (boundaryInfo) {
+                        boundaryPath = `boundaries_hq/${boundaryInfo.file}`;
+                    }
                 }
                 
-                const boundaryData = boundaries[geoLevel];
-                const idField = metadata.boundaries[geoLevel].id_field;
+                // Fall back to regular boundaries
+                if (!boundaryPath) {
+                    boundaryInfo = metadata.boundaries[geoLevel];
+                    boundaryPath = `boundaries/${boundaryInfo.file}`;
+                }
+                
+                // Load boundary data if not cached
+                const cacheKey = `${geoLevel}_${quality}`;
+                if (!boundaries[cacheKey]) {
+                    showMessage(`Loading ${quality === 'hq' ? 'high quality' : 'optimized'} boundaries...`, 'info');
+                    const response = await fetch(boundaryPath);
+                    if (!response.ok) throw new Error('Failed to load boundaries');
+                    boundaries[cacheKey] = await response.json();
+                }
+                
+                const boundaryData = boundaries[cacheKey];
+                const idField = boundaryInfo.id_field;
                 
                 // Create lookup for CSV data
                 csvLookup = {};
@@ -1112,8 +1206,8 @@
                     map.fitBounds(bounds.pad(0.1));
                 }
                 
-                // Create legend
-                createLegend(minValue, maxValue, colorScale);
+                // Create legend with title and units
+                createLegend(minValue, maxValue, colorScale, mapTitle, dataUnits);
                 
                 // Update stats
                 document.getElementById('statFeatures').textContent = boundaryData.features.length;
@@ -1121,8 +1215,9 @@
                 document.getElementById('statRange').textContent = `${minValue.toLocaleString()} - ${maxValue.toLocaleString()}`;
                 document.getElementById('statsBox').style.display = 'block';
                 
-                // Show export button
+                // Show export button prominently
                 document.getElementById('exportBtn').style.display = 'block';
+                document.getElementById('exportBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 
                 showMessage(`Success! Created choropleth with ${matchCount} matched features.`, 'success');
                 
@@ -1132,7 +1227,7 @@
         }
         
         // Create legend
-        function createLegend(minValue, maxValue, colorScale) {
+        function createLegend(minValue, maxValue, colorScale, mapTitle, dataUnits) {
             if (currentLegend) {
                 map.removeControl(currentLegend);
             }
@@ -1144,8 +1239,16 @@
                 const range = maxValue - minValue;
                 const steps = 5;
                 
-                div.innerHTML = `<h3>${selectedDataColumn}</h3>`;
+                // Add map title if provided
+                if (mapTitle) {
+                    div.innerHTML = `<h2 style="font-size: 1.1em; margin-bottom: 10px; color: #fff;">${mapTitle}</h2>`;
+                }
                 
+                // Add column name and units
+                const unitsText = dataUnits ? ` (${dataUnits})` : '';
+                div.innerHTML += `<h3>${selectedDataColumn}${unitsText}</h3>`;
+                
+                // Create color scale items
                 for (let i = 0; i < steps; i++) {
                     const value = minValue + (range * i / (steps - 1));
                     const color = colorScale(value).hex();
@@ -1154,7 +1257,7 @@
                     div.innerHTML += `
                         <div class="legend-item">
                             <div class="legend-color" style="background: ${color}"></div>
-                            <span>${label}</span>
+                            <span>${label}${dataUnits && !dataUnits.includes('%') ? '' : ''}</span>
                         </div>
                     `;
                 }

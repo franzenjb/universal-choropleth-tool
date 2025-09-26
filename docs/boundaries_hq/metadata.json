@@ -1,0 +1,33 @@
+{
+  "generated": "2025-09-26",
+  "description": "High quality boundary files for professional choropleth mapping",
+  "quality": "HIGH - Minimal simplification for ArcGIS export quality",
+  "boundaries": {
+    "us_states": {
+      "file": "us_states_hq.json",
+      "name": "US States (High Quality)",
+      "level": "state",
+      "size_kb": 4775.4,
+      "id_field": "FIPS",
+      "join_fields": [
+        "FIPS",
+        "ABBR",
+        "NAME"
+      ],
+      "quality": "HIGH"
+    },
+    "us_counties": {
+      "file": "us_counties_hq.json",
+      "name": "US Counties (High Quality)",
+      "level": "county",
+      "size_kb": 22409.6,
+      "id_field": "GEOID",
+      "join_fields": [
+        "GEOID",
+        "STATEFP",
+        "NAME"
+      ],
+      "quality": "HIGH"
+    }
+  }
+}
