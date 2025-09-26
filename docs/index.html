@@ -604,26 +604,74 @@
                     map.removeLayer(currentLayer);
                 }
                 
+                // Track which features have data for smart zoom
+                let featuresWithData = [];
+                
                 // Add new layer
                 currentLayer = L.geoJSON(boundaryData, {
                     style: styleFeature,
                     onEachFeature: function(feature, layer) {
                         const id = feature.properties[idField];
-                        const lookupKey = String(id).trim().toUpperCase();
-                        const value = csvLookup[lookupKey];
-                        const name = feature.properties.NAME || id;
+                        // Try multiple formats for matching
+                        let value = csvLookup[id] || 
+                                   csvLookup[String(id).toUpperCase()] || 
+                                   csvLookup[String(id).padStart(2, '0')];
+                        
+                        const name = feature.properties.NAME || feature.properties.ABBR || id;
                         
                         if (value !== undefined) {
+                            featuresWithData.push(layer);
+                            
+                            // Create nice popup with formatted data
+                            const formattedValue = typeof value === 'number' 
+                                ? value.toLocaleString(undefined, {
+                                    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+                                    maximumFractionDigits: 2
+                                  })
+                                : value;
+                            
+                            // Make column name more readable
+                            const readableColumn = selectedDataColumn
+                                .replace(/_/g, ' ')
+                                .replace(/([A-Z])/g, ' $1')
+                                .trim()
+                                .split(' ')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                .join(' ');
+                            
                             layer.bindPopup(`
-                                <strong>${name}</strong><br>
-                                ${selectedDataColumn}: ${value.toLocaleString()}
+                                <div style="font-size: 14px; padding: 5px;">
+                                    <strong style="font-size: 16px;">${name}</strong><br>
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd;">
+                                        <strong>${readableColumn}:</strong><br>
+                                        <span style="font-size: 18px; color: #2c7fb8;">${formattedValue}</span>
+                                    </div>
+                                </div>
                             `);
+                            
+                            // Add hover effect
+                            layer.on('mouseover', function(e) {
+                                this.setStyle({
+                                    weight: 2,
+                                    color: '#000',
+                                    fillOpacity: 0.9
+                                });
+                            });
+                            
+                            layer.on('mouseout', function(e) {
+                                currentLayer.resetStyle(e.target);
+                            });
                         }
                     }
                 }).addTo(map);
                 
-                // Fit map to layer bounds
-                map.fitBounds(currentLayer.getBounds());
+                // Smart zoom: fit to features with data, or all features if none match
+                if (featuresWithData.length > 0) {
+                    const group = new L.featureGroup(featuresWithData);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    map.fitBounds(currentLayer.getBounds());
+                }
                 
                 // Create legend
                 createLegend(minValue, maxValue, colorScale);
@@ -675,26 +723,117 @@
                 existingLegend.remove();
             }
             
+            // Make column name readable for legend
+            const readableColumn = selectedDataColumn
+                .replace(/_/g, ' ')
+                .replace(/([A-Z])/g, ' $1')
+                .trim()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+            
             const legend = document.createElement('div');
             legend.className = 'legend';
-            legend.innerHTML = `<h3>Legend</h3>`;
+            legend.innerHTML = `
+                <h3>${readableColumn}</h3>
+                <button id="exportBtn" style="
+                    background: linear-gradient(90deg, #4caf50, #66bb6a);
+                    color: white;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin-bottom: 15px;
+                    width: 100%;
+                    font-size: 12px;
+                    font-weight: 600;
+                ">📥 Export for ArcGIS</button>
+            `;
             
-            // Create 5 legend items
+            // Create 5 legend items from high to low
             const steps = 5;
-            for (let i = 0; i < steps; i++) {
+            for (let i = steps - 1; i >= 0; i--) {
                 const value = min + (max - min) * (i / (steps - 1));
                 const color = colorScale(value).hex();
                 
                 const item = document.createElement('div');
                 item.className = 'legend-item';
+                
+                // Format the value nicely
+                const formattedValue = value.toLocaleString(undefined, {
+                    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+                    maximumFractionDigits: value > 1000 ? 0 : 2
+                });
+                
                 item.innerHTML = `
                     <div class="legend-color" style="background: ${color}"></div>
-                    <span>${value.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                    <span>${formattedValue}</span>
                 `;
                 legend.appendChild(item);
             }
             
+            // Add no data item
+            const noDataItem = document.createElement('div');
+            noDataItem.className = 'legend-item';
+            noDataItem.innerHTML = `
+                <div class="legend-color" style="background: #666; opacity: 0.3;"></div>
+                <span style="color: #999;">No data</span>
+            `;
+            legend.appendChild(noDataItem);
+            
             document.getElementById('map').appendChild(legend);
+            
+            // Add export functionality
+            document.getElementById('exportBtn').addEventListener('click', exportForArcGIS);
+        }
+        
+        // Export GeoJSON for ArcGIS
+        function exportForArcGIS() {
+            if (!currentLayer) {
+                showMessage('No map to export', 'error');
+                return;
+            }
+            
+            const geoLevel = document.getElementById('geoLevel').value;
+            const joinColumn = document.getElementById('joinColumn').value;
+            
+            // Create enriched GeoJSON with data values
+            const exportData = {
+                type: "FeatureCollection",
+                features: []
+            };
+            
+            currentLayer.eachLayer(function(layer) {
+                const feature = layer.feature;
+                const id = feature.properties[metadata.boundaries[geoLevel].id_field];
+                
+                // Get the data value
+                const value = csvLookup[id] || 
+                             csvLookup[String(id).toUpperCase()] || 
+                             csvLookup[String(id).padStart(2, '0')];
+                
+                // Clone the feature and add the data value
+                const exportFeature = JSON.parse(JSON.stringify(feature));
+                exportFeature.properties[selectedDataColumn] = value || null;
+                exportFeature.properties['DATA_VALUE'] = value || null;
+                exportFeature.properties['DATA_FIELD'] = selectedDataColumn;
+                
+                exportData.features.push(exportFeature);
+            });
+            
+            // Download the file
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `choropleth_${selectedDataColumn}_${new Date().toISOString().split('T')[0]}.geojson`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showMessage('GeoJSON exported! Import into ArcGIS Pro using "JSON to Features" tool.', 'success');
         }
         
         // Show message
