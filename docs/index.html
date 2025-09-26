@@ -843,26 +843,45 @@
                         // Check if these look like ZIP codes by analyzing prefixes
                         const zipAnalysis = analyzeZipCodes(values.slice(0, 100));
                         
-                        if (zipAnalysis.suggestedLevel && zipAnalysis.confidence !== 'low') {
+                        // If we get ANY suggestion from ZIP analysis, these are likely ZIPs
+                        if (zipAnalysis.suggestedLevel) {
                             // These are ZIP codes!
                             analysis.recommendations.push({
                                 type: 'zip',
                                 column: col,
                                 level: zipAnalysis.suggestedLevel,
-                                confidence: 'high',
+                                confidence: zipAnalysis.confidence === 'low' ? 'medium' : zipAnalysis.confidence,
                                 message: `"${col}" contains ZIP codes - ${zipAnalysis.message}`,
                                 detail: `✅ GEOID column detected as ZIP codes: ${zipAnalysis.detail}`
                             });
                         } else {
-                            // Could be county FIPS
-                            analysis.recommendations.push({
-                                type: 'county_fips',
-                                column: col,
-                                level: 'us_counties',
-                                confidence: 'low',
-                                message: `"${col}" might be county FIPS (${values.slice(0,3).join(', ')})`,
-                                detail: 'GEOID could be counties or ZIPs - try both'
-                            });
+                            // Fall back to checking if values look like valid ZIP ranges
+                            const numValues = values.slice(0, 10).map(v => parseInt(v));
+                            const minVal = Math.min(...numValues);
+                            const maxVal = Math.max(...numValues);
+                            
+                            // ZIP codes range from 00501 to 99950
+                            if (minVal >= 501 && maxVal <= 99950) {
+                                // These are definitely ZIP codes
+                                analysis.recommendations.push({
+                                    type: 'zip',
+                                    column: col,
+                                    level: 'zctas_northeast', // Default to northeast
+                                    confidence: 'high',
+                                    message: `"${col}" contains ZIP codes (${values.slice(0,3).join(', ')})`,
+                                    detail: '✅ Values are in valid ZIP code range. Select appropriate region.'
+                                });
+                            } else {
+                                // Could be county FIPS
+                                analysis.recommendations.push({
+                                    type: 'county_fips',
+                                    column: col,
+                                    level: 'us_counties',
+                                    confidence: 'low',
+                                    message: `"${col}" might be county FIPS (${values.slice(0,3).join(', ')})`,
+                                    detail: 'GEOID could be counties or ZIPs - check your data'
+                                });
+                            }
                         }
                     }
                 }
@@ -1362,11 +1381,23 @@
                 document.getElementById('statRange').textContent = `${minValue.toLocaleString()} - ${maxValue.toLocaleString()}`;
                 document.getElementById('statsBox').style.display = 'block';
                 
-                // Show export button prominently
-                document.getElementById('exportBtn').style.display = 'block';
-                document.getElementById('exportBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                
-                showMessage(`Success! Created choropleth with ${matchCount} matched features.`, 'success');
+                // Check if we had any matches
+                if (matchCount === 0) {
+                    showMessage(`⚠️ No data matched! This usually means:<br>
+                        • Wrong geographic level selected (e.g., Counties selected for ZIP code data)<br>
+                        • Join column values don't match boundary IDs<br>
+                        <b>Solution:</b> Check if your GEOID/ZIP values match the geographic level you selected.<br>
+                        For ZIP codes starting with ${Object.keys(csvLookup)[0]?.substring(0,2) || 'XX'}, try selecting the appropriate ZIP code region.`, 'error');
+                    
+                    // Hide export button if no matches
+                    document.getElementById('exportBtn').style.display = 'none';
+                } else {
+                    // Show export button prominently
+                    document.getElementById('exportBtn').style.display = 'block';
+                    document.getElementById('exportBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    showMessage(`Success! Created choropleth with ${matchCount} matched features.`, 'success');
+                }
                 
             } catch (error) {
                 showMessage(`Error creating map: ${error.message}`, 'error');
