@@ -1,0 +1,312 @@
+﻿State,Year,Type,GEOID,GEO display_label,Households,Poverty Households,ALICE Households,Above ALICE Households,County
+Florida,2023,Sub_County,1200191248,"Gainesville CCD, Alachua County, Florida",78608,18181,24323,36104,Alachua County
+Florida,2023,Sub_County,1200191469,"Hawthorne CCD, Alachua County, Florida",2217,370,912,935,Alachua County
+Florida,2023,Sub_County,1200191495,"High Springs-Alachua CCD, Alachua County, Florida",17154,1673,3971,11510,Alachua County
+Florida,2023,Sub_County,1200192184,"Micanopy CCD, Alachua County, Florida",1358,239,319,800,Alachua County
+Florida,2023,Sub_County,1200192314,"Newberry-Archer CCD, Alachua County, Florida",10135,903,2183,7049,Alachua County
+Florida,2023,Sub_County,1200193536,"Waldo CCD, Alachua County, Florida",3304,520,1242,1542,Alachua County
+Florida,2023,Sub_County,1200392009,"Macclenny CCD, Baker County, Florida",5214,552,1589,3073,Baker County
+Florida,2023,Sub_County,1200393068,"Sanderson CCD, Baker County, Florida",3798,594,966,2238,Baker County
+Florida,2023,Sub_County,1200591989,"Lynn Haven CCD, Bay County, Florida",9447,780,2319,6348,Bay County
+Florida,2023,Sub_County,1200592145,"Mexico Beach CCD, Bay County, Florida",596,33,197,366,Bay County
+Florida,2023,Sub_County,1200592626,"Panama City CCD, Bay County, Florida",35444,4285,12092,19067,Bay County
+Florida,2023,Sub_County,1200592639,"Panama City Beaches CCD, Bay County, Florida",22363,1872,6414,14077,Bay County
+Florida,2023,Sub_County,1200593172,"Southport CCD, Bay County, Florida",4556,835,1366,2355,Bay County
+Florida,2023,Sub_County,1200593744,"Youngstown CCD, Bay County, Florida",3712,913,1115,1684,Bay County
+Florida,2023,Sub_County,1200790312,"Brooker CCD, Bradford County, Florida",398,58,72,268,Bradford County
+Florida,2023,Sub_County,1200791430,"Hampton CCD, Bradford County, Florida",2550,496,641,1413,Bradford County
+Florida,2023,Sub_County,1200791898,"Lawtey CCD, Bradford County, Florida",1547,187,544,816,Bradford County
+Florida,2023,Sub_County,1200793237,"Starke CCD, Bradford County, Florida",4609,1275,1406,1928,Bradford County
+Florida,2023,Sub_County,1200990611,"Cocoa Beach-Cape Canaveral CCD, Brevard County, Florida",13192,1198,4561,7433,Brevard County
+Florida,2023,Sub_County,1200990624,"Cocoa-Rockledge CCD, Brevard County, Florida",53576,4832,18080,30664,Brevard County
+Florida,2023,Sub_County,1200991573,"Indialantic-Melbourne Beach CCD, Brevard County, Florida",19963,1484,5173,13306,Brevard County
+Florida,2023,Sub_County,1200992028,"Malabar CCD, Brevard County, Florida",8291,746,3414,4131,Brevard County
+Florida,2023,Sub_County,1200992106,"Melbourne CCD, Brevard County, Florida",56865,6142,19293,31430,Brevard County
+Florida,2023,Sub_County,1200992119,"Melbourne Shores-Floridana Beach CCD, Brevard County, Florida",3783,142,1327,2314,Brevard County
+Florida,2023,Sub_County,1200992132,"Merritt Island CCD, Brevard County, Florida",18197,1686,5099,11412,Brevard County
+Florida,2023,Sub_County,1200992587,"Palm Bay CCD, Brevard County, Florida",44307,4706,16794,22807,Brevard County
+Florida,2023,Sub_County,1200993419,"Titusville CCD, Brevard County, Florida",28968,2925,11256,14787,Brevard County
+Florida,2023,Sub_County,1200993588,"West Brevard CCD, Brevard County, Florida",4747,74,952,3721,Brevard County
+Florida,2023,Sub_County,1201190644,"Coral Springs-Margate CCD, Broward County, Florida",89598,10085,36739,42774,Broward County
+Florida,2023,Sub_County,1201190754,"Davie CCD, Broward County, Florida",75035,6457,19936,48642,Broward County
+Florida,2023,Sub_County,1201190806,"Deerfield Beach CCD, Broward County, Florida",77881,8916,25739,43226,Broward County
+Florida,2023,Sub_County,1201191098,"Fort Lauderdale CCD, Broward County, Florida",131297,18281,49793,63223,Broward County
+Florida,2023,Sub_County,1201191417,"Hallandale Beach CCD, Broward County, Florida",24049,5255,10309,8485,Broward County
+Florida,2023,Sub_County,1201191508,"Hollywood CCD, Broward County, Florida",77863,11279,32623,33961,Broward County
+Florida,2023,Sub_County,1201192236,"Miramar-Pembroke Pines CCD, Broward County, Florida",109604,12662,36409,60533,Broward County
+Florida,2023,Sub_County,1201192756,"Plantation CCD, Broward County, Florida",114459,16283,45961,52215,Broward County
+Florida,2023,Sub_County,1201192782,"Pompano Beach CCD, Broward County, Florida",49586,7534,20922,21130,Broward County
+Florida,2023,Sub_County,1201390026,"Altha CCD, Calhoun County, Florida",822,175,281,366,Calhoun County
+Florida,2023,Sub_County,1201390169,"Blountstown CCD, Calhoun County, Florida",2308,513,752,1043,Calhoun County
+Florida,2023,Sub_County,1201393592,"West Calhoun CCD, Calhoun County, Florida",1495,309,613,573,Calhoun County
+Florida,2023,Sub_County,1201591352,"Grove City-Rotonda CCD, Charlotte County, Florida",22259,2059,7839,12361,Charlotte County
+Florida,2023,Sub_County,1201592834,"Port Charlotte CCD, Charlotte County, Florida",44136,4402,17452,22282,Charlotte County
+Florida,2023,Sub_County,1201592899,"Punta Gorda CCD, Charlotte County, Florida",20981,1836,7165,11980,Charlotte County
+Florida,2023,Sub_County,1201790715,"Crystal River CCD, Citrus County, Florida",34425,5332,10768,18325,Citrus County
+Florida,2023,Sub_County,1201791625,"Inverness CCD, Citrus County, Florida",35276,5241,12664,17371,Citrus County
+Florida,2023,Sub_County,1201991300,"Green Cove Springs CCD, Clay County, Florida",7030,817,2495,3718,Clay County
+Florida,2023,Sub_County,1201991742,"Keystone Heights CCD, Clay County, Florida",7147,676,2476,3995,Clay County
+Florida,2023,Sub_County,1201992197,"Middleburg-Clay Hill CCD, Clay County, Florida",24684,2348,6894,15442,Clay County
+Florida,2023,Sub_County,1201992509,"Orange Park CCD, Clay County, Florida",36133,2560,10305,23268,Clay County
+Florida,2023,Sub_County,1201992678,"Penney Farms CCD, Clay County, Florida",6763,486,2011,4266,Clay County
+Florida,2023,Sub_County,1202191027,"Everglades CCD, Collier County, Florida",10862,839,4278,5745,Collier County
+Florida,2023,Sub_County,1202191560,"Immokalee CCD, Collier County, Florida",24726,2811,8558,13357,Collier County
+Florida,2023,Sub_County,1202192048,"Marco Island CCD, Collier County, Florida",8485,665,2374,5446,Collier County
+Florida,2023,Sub_County,1202192301,"Naples CCD, Collier County, Florida",116794,10973,40381,65440,Collier County
+Florida,2023,Sub_County,1202391183,"Fort White CCD, Columbia County, Florida",6494,1256,2060,3178,Columbia County
+Florida,2023,Sub_County,1202391820,"Lake City CCD, Columbia County, Florida",19691,3109,7265,9317,Columbia County
+Florida,2023,Sub_County,1202392366,"North Columbia CCD, Columbia County, Florida",535,46,157,332,Columbia County
+Florida,2023,Sub_County,1202790065,"Arcadia East CCD, DeSoto County, Florida",7996,1844,3172,2980,DeSoto County
+Florida,2023,Sub_County,1202790078,"Arcadia West CCD, DeSoto County, Florida",4660,575,1855,2230,DeSoto County
+Florida,2023,Sub_County,1202990689,"Cross City North CCD, Dixie County, Florida",4712,898,1916,1898,Dixie County
+Florida,2023,Sub_County,1202990702,"Cross City South CCD, Dixie County, Florida",1418,200,608,610,Dixie County
+Florida,2023,Sub_County,1203190110,"Baldwin CCD, Duval County, Florida",3264,431,1059,1774,Duval County
+Florida,2023,Sub_County,1203191640,"Jacksonville Beaches CCD, Duval County, Florida",24604,1525,5713,17366,Duval County
+Florida,2023,Sub_County,1203191642,"Jacksonville East CCD, Duval County, Florida",204550,24072,55792,124686,Duval County
+Florida,2023,Sub_County,1203191644,"Jacksonville North CCD, Duval County, Florida",34337,4145,9358,20834,Duval County
+Florida,2023,Sub_County,1203191646,"Jacksonville West CCD, Duval County, Florida",138384,26310,48017,64057,Duval County
+Florida,2023,Sub_County,1203390390,"Cantonment CCD, Escambia County, Florida",23810,2185,5852,15773,Escambia County
+Florida,2023,Sub_County,1203390507,"Century CCD, Escambia County, Florida",3166,580,1071,1515,Escambia County
+Florida,2023,Sub_County,1203392457,"Northwest Escambia CCD, Escambia County, Florida",1729,188,626,915,Escambia County
+Florida,2023,Sub_County,1203392691,"Pensacola CCD, Escambia County, Florida",99587,14892,32335,52360,Escambia County
+Florida,2023,Sub_County,1203590338,"Bunnell CCD, Flagler County, Florida",32740,3341,12166,17233,Flagler County
+Florida,2023,Sub_County,1203591092,"Flagler Beach CCD, Flagler County, Florida",17556,1145,5808,10603,Flagler County
+Florida,2023,Sub_County,1203790039,"Apalachicola CCD, Franklin County, Florida",2271,306,761,1204,Franklin County
+Florida,2023,Sub_County,1203790429,"Carrabelle CCD, Franklin County, Florida",1357,188,344,825,Franklin County
+Florida,2023,Sub_County,1203790936,"Eastpoint CCD, Franklin County, Florida",1290,315,289,686,Franklin County
+Florida,2023,Sub_County,1203990520,"Chattahoochee CCD, Gadsden County, Florida",1473,296,732,445,Gadsden County
+Florida,2023,Sub_County,1203991313,"Greensboro CCD, Gadsden County, Florida",1109,239,445,425,Gadsden County
+Florida,2023,Sub_County,1203991456,"Havana CCD, Gadsden County, Florida",6244,1024,2381,2839,Gadsden County
+Florida,2023,Sub_County,1203992912,"Quincy CCD, Gadsden County, Florida",7659,2251,3040,2368,Gadsden County
+Florida,2023,Sub_County,1204190130,"Bell CCD, Gilchrist County, Florida",2488,423,887,1178,Gilchrist County
+Florida,2023,Sub_County,1204193432,"Trenton CCD, Gilchrist County, Florida",4425,541,1593,2291,Gilchrist County
+Florida,2023,Sub_County,1204392379,"Northeast Glades CCD, Glades County, Florida",1463,359,729,375,Glades County
+Florida,2023,Sub_County,1204393185,"Southwest Glades CCD, Glades County, Florida",3097,679,1157,1261,Glades County
+Florida,2023,Sub_County,1204592863,"Port St. Joe CCD, Gulf County, Florida",3568,307,1285,1976,Gulf County
+Florida,2023,Sub_County,1204593640,"Wewahitchka CCD, Gulf County, Florida",2232,429,676,1127,Gulf County
+Florida,2023,Sub_County,1204791651,"Jasper CCD, Hamilton County, Florida",2007,519,560,928,Hamilton County
+Florida,2023,Sub_County,1204791677,"Jennings CCD, Hamilton County, Florida",1607,454,528,625,Hamilton County
+Florida,2023,Sub_County,1204793653,"White Springs CCD, Hamilton County, Florida",746,157,176,413,Hamilton County
+Florida,2023,Sub_County,1204990247,"Bowling Green CCD, Hardee County, Florida",1326,228,404,694,Hardee County
+Florida,2023,Sub_County,1204993549,"Wauchula CCD, Hardee County, Florida",4466,1367,1250,1849,Hardee County
+Florida,2023,Sub_County,1204993783,"Zolfo Springs CCD, Hardee County, Florida",2356,483,609,1264,Hardee County
+Florida,2023,Sub_County,1205190598,"Clewiston CCD, Hendry County, Florida",6569,1204,2325,3040,Hendry County
+Florida,2023,Sub_County,1205191781,"LaBelle CCD, Hendry County, Florida",7375,1352,2712,3311,Hendry County
+Florida,2023,Sub_County,1205390325,"Brooksville CCD, Hernando County, Florida",14952,2670,5949,6333,Hernando County
+Florida,2023,Sub_County,1205391475,"Hernando Beach CCD, Hernando County, Florida",5859,733,2322,2804,Hernando County
+Florida,2023,Sub_County,1205392964,"Ridge Manor CCD, Hernando County, Florida",3217,286,1748,1183,Hernando County
+Florida,2023,Sub_County,1205393230,"Spring Hill CCD, Hernando County, Florida",56516,6281,23337,26898,Hernando County
+Florida,2023,Sub_County,1205590091,"Avon Park CCD, Highlands County, Florida",15370,2340,5714,7316,Highlands County
+Florida,2023,Sub_County,1205591846,"Lake Placid CCD, Highlands County, Florida",10939,1446,3974,5519,Highlands County
+Florida,2023,Sub_County,1205593120,"Sebring CCD, Highlands County, Florida",19634,3629,5963,10042,Highlands County
+Florida,2023,Sub_County,1205790286,"Brandon CCD, Hillsborough County, Florida",71784,8579,23992,39213,Hillsborough County
+Florida,2023,Sub_County,1205791735,"Keystone-Citrus Park CCD, Hillsborough County, Florida",55950,4363,15340,36247,Hillsborough County
+Florida,2023,Sub_County,1205792614,"Palm River-Gibsonton CCD, Hillsborough County, Florida",21244,2936,7691,10617,Hillsborough County
+Florida,2023,Sub_County,1205792769,"Plant City CCD, Hillsborough County, Florida",31352,4298,12180,14874,Hillsborough County
+Florida,2023,Sub_County,1205793003,"Ruskin CCD, Hillsborough County, Florida",37830,3591,12884,21355,Hillsborough County
+Florida,2023,Sub_County,1205793367,"Tampa CCD, Hillsborough County, Florida",288712,45528,105703,137481,Hillsborough County
+Florida,2023,Sub_County,1205793693,"Wimauma-Riverview CCD, Hillsborough County, Florida",63126,5749,15834,41543,Hillsborough County
+Florida,2023,Sub_County,1205990221,"Bonifay CCD, Holmes County, Florida",3581,661,1651,1269,Holmes County
+Florida,2023,Sub_County,1205991001,"Esto-Noma CCD, Holmes County, Florida",1371,117,631,623,Holmes County
+Florida,2023,Sub_County,1205993596,"West Holmes CCD, Holmes County, Florida",2135,357,955,823,Holmes County
+Florida,2023,Sub_County,1206191066,"Fellsmere CCD, Indian River County, Florida",8416,1145,3194,4077,Indian River County
+Florida,2023,Sub_County,1206193510,"Vero Beach CCD, Indian River County, Florida",60280,6237,20635,33408,Indian River County
+Florida,2023,Sub_County,1206390013,"Alford CCD, Jackson County, Florida",1942,193,896,853,Jackson County
+Florida,2023,Sub_County,1206390377,"Campbellton CCD, Jackson County, Florida",419,69,159,191,Jackson County
+Florida,2023,Sub_County,1206390650,"Cottondale CCD, Jackson County, Florida",1532,283,553,696,Jackson County
+Florida,2023,Sub_County,1206390728,"Cypress CCD, Jackson County, Florida",1791,385,683,723,Jackson County
+Florida,2023,Sub_County,1206391287,"Graceville CCD, Jackson County, Florida",1652,378,566,708,Jackson County
+Florida,2023,Sub_County,1206391339,"Greenwood CCD, Jackson County, Florida",1529,400,549,580,Jackson County
+Florida,2023,Sub_County,1206392041,"Malone CCD, Jackson County, Florida",1042,219,385,438,Jackson County
+Florida,2023,Sub_County,1206392067,"Marianna CCD, Jackson County, Florida",5314,885,2362,2067,Jackson County
+Florida,2023,Sub_County,1206393133,"Sneads CCD, Jackson County, Florida",1817,362,729,726,Jackson County
+Florida,2023,Sub_County,1206592249,"Monticello CCD, Jefferson County, Florida",3758,776,1272,1710,Jefferson County
+Florida,2023,Sub_County,1206593523,"Wacissa CCD, Jefferson County, Florida",1917,465,563,889,Jefferson County
+Florida,2023,Sub_County,1206790767,"Day CCD, Lafayette County, Florida",416,42,145,229,Lafayette County
+Florida,2023,Sub_County,1206792093,"Mayo CCD, Lafayette County, Florida",2203,455,731,1017,Lafayette County
+Florida,2023,Sub_County,1206990585,"Clermont CCD, Lake County, Florida",43180,2783,14205,26192,Lake County
+Florida,2023,Sub_County,1206991014,"Eustis CCD, Lake County, Florida",14428,1676,5519,7233,Lake County
+Florida,2023,Sub_County,1206991235,"Fruitland Park-Lady Lake CCD, Lake County, Florida",16108,1893,7638,6577,Lake County
+Florida,2023,Sub_County,1206991365,"Groveland-Mascotte CCD, Lake County, Florida",15094,796,5149,9149,Lake County
+Florida,2023,Sub_County,1206991541,"Howey-in-the-Hills-Okahumpka CCD, Lake County, Florida",9506,672,3615,5219,Lake County
+Florida,2023,Sub_County,1206991911,"Leesburg CCD, Lake County, Florida",13243,2367,6488,4388,Lake County
+Florida,2023,Sub_County,1206991924,"Leesburg East CCD, Lake County, Florida",12187,1217,5993,4977,Lake County
+Florida,2023,Sub_County,1206992262,"Mount Dora CCD, Lake County, Florida",12701,1590,4132,6979,Lake County
+Florida,2023,Sub_County,1206993393,"Tavares CCD, Lake County, Florida",12525,1562,5397,5566,Lake County
+Florida,2023,Sub_County,1206993445,"Umatilla CCD, Lake County, Florida",10502,1398,3989,5115,Lake County
+Florida,2023,Sub_County,1207190195,"Boca Grande CCD, Lee County, Florida",299,59,51,189,Lee County
+Florida,2023,Sub_County,1207190234,"Bonita Springs CCD, Lee County, Florida",55032,4304,15287,35441,Lee County
+Florida,2023,Sub_County,1207190403,"Cape Coral CCD, Lee County, Florida",86961,8272,31668,47021,Lee County
+Florida,2023,Sub_County,1207190988,"Estero Island CCD, Lee County, Florida",3916,459,1042,2415,Lee County
+Florida,2023,Sub_County,1207191131,"Fort Myers CCD, Lee County, Florida",75371,10374,31342,33655,Lee County
+Florida,2023,Sub_County,1207191144,"Fort Myers Shores CCD, Lee County, Florida",6822,780,2300,3742,Lee County
+Florida,2023,Sub_County,1207191937,"Lehigh Acres CCD, Lee County, Florida",64027,8076,21470,34481,Lee County
+Florida,2023,Sub_County,1207192392,"North Fort Myers CCD, Lee County, Florida",19773,3322,8489,7962,Lee County
+Florida,2023,Sub_County,1207192743,"Pine Island CCD, Lee County, Florida",4034,505,1497,2032,Lee County
+Florida,2023,Sub_County,1207193094,"Sanibel Island CCD, Lee County, Florida",3353,304,745,2304,Lee County
+Florida,2023,Sub_County,1207390878,"East Leon CCD, Leon County, Florida",15305,838,3637,10830,Leon County
+Florida,2023,Sub_County,1207392384,"Northeast Leon CCD, Leon County, Florida",21025,1123,3224,16678,Leon County
+Florida,2023,Sub_County,1207392463,"Northwest Leon CCD, Leon County, Florida",10372,906,2765,6701,Leon County
+Florida,2023,Sub_County,1207393152,"Southeast Leon CCD, Leon County, Florida",6882,714,2081,4087,Leon County
+Florida,2023,Sub_County,1207393190,"Southwest Leon CCD, Leon County, Florida",4531,908,1452,2171,Leon County
+Florida,2023,Sub_County,1207393295,"Tallahassee Central CCD, Leon County, Florida",18253,6908,5979,5366,Leon County
+Florida,2023,Sub_County,1207393302,"Tallahassee East CCD, Leon County, Florida",11064,1388,3926,5750,Leon County
+Florida,2023,Sub_County,1207393315,"Tallahassee Northeast CCD, Leon County, Florida",7693,1212,2370,4111,Leon County
+Florida,2023,Sub_County,1207393328,"Tallahassee Northwest CCD, Leon County, Florida",11870,4106,3806,3958,Leon County
+Florida,2023,Sub_County,1207393335,"Tallahassee South CCD, Leon County, Florida",6641,1522,2467,2652,Leon County
+Florida,2023,Sub_County,1207393354,"Tallahassee Southwest CCD, Leon County, Florida",7037,2409,2727,1901,Leon County
+Florida,2023,Sub_County,1207590468,"Cedar Key-Yankeetown CCD, Levy County, Florida",2927,599,877,1451,Levy County
+Florida,2023,Sub_County,1207590533,"Chiefland CCD, Levy County, Florida",4969,674,1824,2471,Levy County
+Florida,2023,Sub_County,1207593679,"Williston-Bronson CCD, Levy County, Florida",10080,1749,3546,4785,Levy County
+Florida,2023,Sub_County,1207790884,"East Liberty CCD, Liberty County, Florida",914,144,327,443,Liberty County
+Florida,2023,Sub_County,1207793601,"West Liberty CCD, Liberty County, Florida",1640,381,535,724,Liberty County
+Florida,2023,Sub_County,1207991326,"Greenville CCD, Madison County, Florida",1271,199,404,668,Madison County
+Florida,2023,Sub_County,1207992015,"Madison CCD, Madison County, Florida",5709,1133,2279,2297,Madison County
+Florida,2023,Sub_County,1208190273,"Bradenton CCD, Manatee County, Florida",109578,12104,42525,54949,Manatee County
+Florida,2023,Sub_County,1208192290,"Myakka City CCD, Manatee County, Florida",30163,1801,6316,22046,Manatee County
+Florida,2023,Sub_County,1208192600,"Palmetto CCD, Manatee County, Florida",14220,1797,5605,6818,Manatee County
+Florida,2023,Sub_County,1208192652,"Parrish CCD, Manatee County, Florida",14543,738,3345,10460,Manatee County
+Florida,2023,Sub_County,1208390156,"Belleview CCD, Marion County, Florida",55657,6494,18780,30383,Marion County
+Florida,2023,Sub_County,1208390871,"Dunnellon CCD, Marion County, Florida",6486,1025,2883,2578,Marion County
+Florida,2023,Sub_County,1208390897,"East Marion CCD, Marion County, Florida",8136,1655,3663,2818,Marion County
+Florida,2023,Sub_County,1208391053,"Fellowship CCD, Marion County, Florida",15715,1902,5561,8252,Marion County
+Florida,2023,Sub_County,1208391105,"Fort McCoy-Anthony CCD, Marion County, Florida",5333,1182,1642,2509,Marion County
+Florida,2023,Sub_County,1208392483,"Ocala CCD, Marion County, Florida",63389,8743,23360,31286,Marion County
+Florida,2023,Sub_County,1208392951,"Reddick-McIntosh CCD, Marion County, Florida",5080,1041,1700,2339,Marion County
+Florida,2023,Sub_County,1208591586,"Indiantown CCD, Martin County, Florida",6417,646,1850,3921,Martin County
+Florida,2023,Sub_County,1208592873,"Port Salerno-Hobe Sound CCD, Martin County, Florida",28882,3190,9735,15957,Martin County
+Florida,2023,Sub_County,1208593250,"Stuart CCD, Martin County, Florida",32521,3266,10310,18945,Martin County
+Florida,2023,Sub_County,1208691040,"Everglades CCD, Miami-Dade County, Florida",1895,181,299,1415,Miami-Dade County
+Florida,2023,Sub_County,1208691482,"Hialeah CCD, Miami-Dade County, Florida",119275,21309,51230,46736,Miami-Dade County
+Florida,2023,Sub_County,1208691534,"Homestead CCD, Miami-Dade County, Florida",39851,7880,17004,14967,Miami-Dade County
+Florida,2023,Sub_County,1208691705,"Kendale Lakes-Tamiami CCD, Miami-Dade County, Florida",123949,15433,42740,65776,Miami-Dade County
+Florida,2023,Sub_County,1208691714,"Kendall-Palmetto Bay CCD, Miami-Dade County, Florida",56732,5916,17152,33664,Miami-Dade County
+Florida,2023,Sub_County,1208691729,"Key Biscayne CCD, Miami-Dade County, Florida",5003,396,1071,3536,Miami-Dade County
+Florida,2023,Sub_County,1208692158,"Miami CCD, Miami-Dade County, Florida",383363,70432,160305,152626,Miami-Dade County
+Florida,2023,Sub_County,1208692171,"Miami Beach CCD, Miami-Dade County, Florida",60667,9230,24115,27322,Miami-Dade County
+Florida,2023,Sub_County,1208692175,"Miami Gardens CCD, Miami-Dade County, Florida",33521,4611,16156,12754,Miami-Dade County
+Florida,2023,Sub_County,1208692470,"North Westside CCD, Miami-Dade County, Florida",54376,7109,22648,24619,Miami-Dade County
+Florida,2023,Sub_County,1208692886,"Princeton-Goulds CCD, Miami-Dade County, Florida",58320,9560,22695,26065,Miami-Dade County
+Florida,2023,Sub_County,1208693211,"South Westside CCD, Miami-Dade County, Florida",27853,3115,10226,14512,Miami-Dade County
+Florida,2023,Sub_County,1208791755,"Key West CCD, Monroe County, Florida",14753,1631,5800,7322,Monroe County
+Florida,2023,Sub_County,1208791976,"Lower Keys CCD, Monroe County, Florida",5252,475,1666,3111,Monroe County
+Florida,2023,Sub_County,1208792210,"Middle Keys CCD, Monroe County, Florida",4706,390,1880,2436,Monroe County
+Florida,2023,Sub_County,1208793471,"Upper Keys CCD, Monroe County, Florida",9909,1110,3707,5092,Monroe County
+Florida,2023,Sub_County,1208990364,"Callahan-Hilliard CCD, Nassau County, Florida",10877,1451,3214,6212,Nassau County
+Florida,2023,Sub_County,1208991079,"Fernandina Beach CCD, Nassau County, Florida",11643,988,2701,7954,Nassau County
+Florida,2023,Sub_County,1208993757,"Yulee CCD, Nassau County, Florida",15592,1249,3147,11196,Nassau County
+Florida,2023,Sub_County,1209190104,"Baker CCD, Okaloosa County, Florida",3739,343,1217,2179,Okaloosa County
+Florida,2023,Sub_County,1209190676,"Crestview CCD, Okaloosa County, Florida",20406,1822,5959,12625,Okaloosa County
+Florida,2023,Sub_County,1209190962,"Eglin AFB CCD, Okaloosa County, Florida",1664,89,749,826,Okaloosa County
+Florida,2023,Sub_County,1209191170,"Fort Walton Beach CCD, Okaloosa County, Florida",42756,4220,13178,25358,Okaloosa County
+Florida,2023,Sub_County,1209191885,"Laurel Hill CCD, Okaloosa County, Florida",689,72,236,381,Okaloosa County
+Florida,2023,Sub_County,1209192353,"Niceville-Valparaiso CCD, Okaloosa County, Florida",14869,944,2841,11084,Okaloosa County
+Florida,2023,Sub_County,1209392405,"North Okeechobee CCD, Okeechobee County, Florida",2529,303,1007,1219,Okeechobee County
+Florida,2023,Sub_County,1209392496,"Okeechobee CCD, Okeechobee County, Florida",12658,2264,5087,5307,Okeechobee County
+Florida,2023,Sub_County,1209590052,"Apopka CCD, Orange County, Florida",37735,4070,10839,22826,Orange County
+Florida,2023,Sub_County,1209590910,"East Orange CCD, Orange County, Florida",19644,1859,4030,13755,Orange County
+Florida,2023,Sub_County,1209592522,"Orlando CCD, Orange County, Florida",246953,37626,91488,117839,Orange County
+Florida,2023,Sub_County,1209593198,"Southwest Orange CCD, Orange County, Florida",86151,7373,21356,57422,Orange County
+Florida,2023,Sub_County,1209593458,"Union Park CCD, Orange County, Florida",83364,10241,25554,47569,Orange County
+Florida,2023,Sub_County,1209593705,"Winter Garden-Ocoee CCD, Orange County, Florida",35060,4219,11825,19016,Orange County
+Florida,2023,Sub_County,1209791768,"Kissimmee CCD, Osceola County, Florida",69290,10176,29400,29714,Osceola County
+Florida,2023,Sub_County,1209793029,"St. Cloud CCD, Osceola County, Florida",58284,5935,21490,30859,Osceola County
+Florida,2023,Sub_County,1209793146,"South and East Osceola CCD, Osceola County, Florida",3791,321,1470,2000,Osceola County
+Florida,2023,Sub_County,1209990143,"Belle Glade-Pahokee CCD, Palm Beach County, Florida",9397,2651,4008,2738,Palm Beach County
+Florida,2023,Sub_County,1209990208,"Boca Raton CCD, Palm Beach County, Florida",63220,5959,19009,38252,Palm Beach County
+Florida,2023,Sub_County,1209990260,"Boynton Beach-Delray Beach CCD, Palm Beach County, Florida",147946,14622,60841,72483,Palm Beach County
+Florida,2023,Sub_County,1209991274,"Glades CCD, Palm Beach County, Florida",219,158,34,27,Palm Beach County
+Florida,2023,Sub_County,1209991690,"Jupiter CCD, Palm Beach County, Florida",39474,2755,11620,25099,Palm Beach County
+Florida,2023,Sub_County,1209991872,"Lake Worth CCD, Palm Beach County, Florida",82753,12657,38614,31482,Palm Beach County
+Florida,2023,Sub_County,1209992977,"Riviera Beach CCD, Palm Beach County, Florida",45548,5203,17257,23088,Palm Beach County
+Florida,2023,Sub_County,1209992990,"Royal Palm Beach-West Jupiter CCD, Palm Beach County, Florida",45076,3456,13706,27914,Palm Beach County
+Florida,2023,Sub_County,1209993276,"Sunshine Parkway CCD, Palm Beach County, Florida",82011,6228,24823,50960,Palm Beach County
+Florida,2023,Sub_County,1209993594,"Western Community CCD, Palm Beach County, Florida",10688,366,3042,7280,Palm Beach County
+Florida,2023,Sub_County,1209993614,"West Palm Beach CCD, Palm Beach County, Florida",70721,11416,30426,28879,Palm Beach County
+Florida,2023,Sub_County,1210190481,"Central Pasco CCD, Pasco County, Florida",60617,4490,16662,39465,Pasco County
+Florida,2023,Sub_County,1210190741,"Dade City CCD, Pasco County, Florida",6263,987,2920,2356,Pasco County
+Florida,2023,Sub_County,1210191794,"Lacoochee CCD, Pasco County, Florida",1785,204,777,804,Pasco County
+Florida,2023,Sub_County,1210192327,"New Port Richey CCD, Pasco County, Florida",83157,9625,35705,37827,Pasco County
+Florida,2023,Sub_County,1210192860,"Port Richey CCD, Pasco County, Florida",50469,8066,24846,17557,Pasco County
+Florida,2023,Sub_County,1210193770,"Zephyrhills CCD, Pasco County, Florida",27569,3920,13748,9901,Pasco County
+Florida,2023,Sub_County,1210390182,"Boca Ciega CCD, Pinellas County, Florida",29938,2661,9844,17433,Pinellas County
+Florida,2023,Sub_County,1210390572,"Clearwater CCD, Pinellas County, Florida",145646,17699,54788,73159,Pinellas County
+Florida,2023,Sub_County,1210393036,"St. Pete Beach CCD, Pinellas County, Florida",8569,521,2354,5694,Pinellas County
+Florida,2023,Sub_County,1210393042,"St. Petersburg CCD, Pinellas County, Florida",178946,22187,63847,92912,Pinellas County
+Florida,2023,Sub_County,1210393380,"Tarpon Springs CCD, Pinellas County, Florida",60143,6179,19849,34115,Pinellas County
+Florida,2023,Sub_County,1210590117,"Bartow CCD, Polk County, Florida",24279,3822,7549,12908,Polk County
+Florida,2023,Sub_County,1210591209,"Frostproof CCD, Polk County, Florida",3824,663,1552,1609,Polk County
+Florida,2023,Sub_County,1210591404,"Haines City CCD, Polk County, Florida",71055,9488,23410,38157,Polk County
+Florida,2023,Sub_County,1210591833,"Lakeland CCD, Polk County, Florida",104979,13736,36922,54321,Polk County
+Florida,2023,Sub_County,1210591859,"Lake Wales CCD, Polk County, Florida",18851,3172,7303,8376,Polk County
+Florida,2023,Sub_County,1210593718,"Winter Haven-Auburndale CCD, Polk County, Florida",53655,8414,19714,25527,Polk County
+Florida,2023,Sub_County,1210790663,"Crescent City CCD, Putnam County, Florida",6877,1722,2562,2593,Putnam County
+Florida,2023,Sub_County,1210790923,"East Palatka CCD, Putnam County, Florida",3652,632,1169,1851,Putnam County
+Florida,2023,Sub_County,1210791612,"Interlachen-Florahome CCD, Putnam County, Florida",10474,2387,3379,4708,Putnam County
+Florida,2023,Sub_County,1210792574,"Palatka CCD, Putnam County, Florida",9647,2477,2982,4188,Putnam County
+Florida,2023,Sub_County,1210991222,"Fruit Cove CCD, St. Johns County, Florida",20627,826,3133,16668,St. Johns County
+Florida,2023,Sub_County,1210991443,"Hastings CCD, St. Johns County, Florida",5409,540,1721,3148,St. Johns County
+Florida,2023,Sub_County,1210992080,"Matanzas CCD, St. Johns County, Florida",9336,557,3730,5049,St. Johns County
+Florida,2023,Sub_County,1210992795,"Ponte Vedra CCD, St. Johns County, Florida",13538,901,2942,9695,St. Johns County
+Florida,2023,Sub_County,1210993016,"St. Augustine CCD, St. Johns County, Florida",59917,4919,15742,39256,St. Johns County
+Florida,2023,Sub_County,1211191157,"Fort Pierce CCD, St. Lucie County, Florida",34872,7158,14672,13042,St. Lucie County
+Florida,2023,Sub_County,1211191547,"Hutchinson Island CCD, St. Lucie County, Florida",4965,542,1809,2614,St. Lucie County
+Florida,2023,Sub_County,1211192866,"Port St. Lucie CCD, St. Lucie County, Florida",88622,7212,31430,49980,St. Lucie County
+Florida,2023,Sub_County,1211193620,"West St. Lucie CCD, St. Lucie County, Florida",3181,204,1189,1788,St. Lucie County
+Florida,2023,Sub_County,1211390020,"Allentown CCD, Santa Rosa County, Florida",1293,140,358,795,Santa Rosa County
+Florida,2023,Sub_County,1211390085,"Avalon-Mulat CCD, Santa Rosa County, Florida",3577,87,740,2750,Santa Rosa County
+Florida,2023,Sub_County,1211390097,"Bagdad CCD, Santa Rosa County, Florida",2415,224,676,1515,Santa Rosa County
+Florida,2023,Sub_County,1211390162,"Berrydale CCD, Santa Rosa County, Florida",670,69,252,349,Santa Rosa County
+Florida,2023,Sub_County,1211390903,"East Milton CCD, Santa Rosa County, Florida",3821,663,1344,1814,Santa Rosa County
+Florida,2023,Sub_County,1211391376,"Gulf Breeze CCD, Santa Rosa County, Florida",2757,200,648,1909,Santa Rosa County
+Florida,2023,Sub_County,1211391436,"Harold CCD, Santa Rosa County, Florida",356,56,171,129,Santa Rosa County
+Florida,2023,Sub_County,1211391500,"Holley-Navarre CCD, Santa Rosa County, Florida",15166,1110,3367,10689,Santa Rosa County
+Florida,2023,Sub_County,1211391664,"Jay CCD, Santa Rosa County, Florida",1425,236,414,775,Santa Rosa County
+Florida,2023,Sub_County,1211392218,"Midway CCD, Santa Rosa County, Florida",11423,665,2930,7828,Santa Rosa County
+Florida,2023,Sub_County,1211392223,"Milton CCD, Santa Rosa County, Florida",5129,633,1913,2583,Santa Rosa County
+Florida,2023,Sub_County,1211392269,"Munson CCD, Santa Rosa County, Florida",658,156,261,241,Santa Rosa County
+Florida,2023,Sub_County,1211392309,"Navarre Beach CCD, Santa Rosa County, Florida",756,26,258,472,Santa Rosa County
+Florida,2023,Sub_County,1211392561,"Pace CCD, Santa Rosa County, Florida",14502,1213,4179,9110,Santa Rosa County
+Florida,2023,Sub_County,1211393127,"Skyline CCD, Santa Rosa County, Florida",7302,809,1952,4541,Santa Rosa County
+Florida,2023,Sub_County,1211590975,"Englewood CCD, Sarasota County, Florida",8297,532,3494,4271,Sarasota County
+Florida,2023,Sub_County,1211591599,"Interior County CCD, Sarasota County, Florida",5483,576,890,4017,Sarasota County
+Florida,2023,Sub_County,1211591963,"Longboat Key CCD, Sarasota County, Florida",2630,146,488,1996,Sarasota County
+Florida,2023,Sub_County,1211592431,"North Port CCD, Sarasota County, Florida",30299,2113,11556,16630,Sarasota County
+Florida,2023,Sub_County,1211592542,"Osprey-Laurel-Nokomis CCD, Sarasota County, Florida",11735,949,3896,6890,Sarasota County
+Florida,2023,Sub_County,1211593107,"Sarasota CCD, Sarasota County, Florida",105020,9853,34295,60872,Sarasota County
+Florida,2023,Sub_County,1211593484,"Venice CCD, Sarasota County, Florida",42039,2882,14147,25010,Sarasota County
+Florida,2023,Sub_County,1211790455,"Casselberry-Altamonte Springs CCD, Seminole County, Florida",90902,8587,34331,47984,Seminole County
+Florida,2023,Sub_County,1211792548,"Oviedo CCD, Seminole County, Florida",36972,3232,8474,25266,Seminole County
+Florida,2023,Sub_County,1211793081,"Sanford CCD, Seminole County, Florida",57522,5083,19425,33014,Seminole County
+Florida,2023,Sub_County,1211990344,"Bushnell-Center Hill CCD, Sumter County, Florida",11015,1800,4253,4962,Sumter County
+Florida,2023,Sub_County,1211993666,"Wildwood CCD, Sumter County, Florida",55926,3577,16506,35843,Sumter County
+Florida,2023,Sub_County,1212190299,"Branford CCD, Suwannee County, Florida",2576,382,1012,1182,Suwannee County
+Florida,2023,Sub_County,1212190858,"Dowling Park CCD, Suwannee County, Florida",3446,715,1401,1330,Suwannee County
+Florida,2023,Sub_County,1212191950,"Live Oak CCD, Suwannee County, Florida",6602,833,2439,3330,Suwannee County
+Florida,2023,Sub_County,1212192002,"McAlpin-Wellborn CCD, Suwannee County, Florida",2943,340,817,1786,Suwannee County
+Florida,2023,Sub_County,1212392704,"Perry North CCD, Taylor County, Florida",5477,900,2470,2107,Taylor County
+Florida,2023,Sub_County,1212392717,"Perry South CCD, Taylor County, Florida",2094,306,939,849,Taylor County
+Florida,2023,Sub_County,1212591807,"Lake Butler CCD, Union County, Florida",1773,280,579,914,Union County
+Florida,2023,Sub_County,1212592925,"Raiford CCD, Union County, Florida",782,140,234,408,Union County
+Florida,2023,Sub_County,1212593731,"Worthington Springs CCD, Union County, Florida",1637,295,291,1051,Union County
+Florida,2023,Sub_County,1212790494,"Central Volusia CCD, Volusia County, Florida",19722,1303,4487,13932,Volusia County
+Florida,2023,Sub_County,1212790780,"Daytona Beach CCD, Volusia County, Florida",18895,4791,8031,6073,Volusia County
+Florida,2023,Sub_County,1212790793,"DeBary-Orange City CCD, Volusia County, Florida",20464,2003,6483,11978,Volusia County
+Florida,2023,Sub_County,1212790832,"DeLand CCD, Volusia County, Florida",29442,3452,9924,16066,Volusia County
+Florida,2023,Sub_County,1212790845,"Deltona CCD, Volusia County, Florida",37162,3727,11644,21791,Volusia County
+Florida,2023,Sub_County,1212792340,"New Smyrna Beach CCD, Volusia County, Florida",29939,3009,10620,16310,Volusia County
+Florida,2023,Sub_County,1212792418,"North Peninsula CCD, Volusia County, Florida",12627,1361,4966,6300,Volusia County
+Florida,2023,Sub_County,1212792535,"Ormond Beach CCD, Volusia County, Florida",27647,3930,10775,12942,Volusia County
+Florida,2023,Sub_County,1212792730,"Pierson-Seville CCD, Volusia County, Florida",2723,439,759,1525,Volusia County
+Florida,2023,Sub_County,1212792847,"Port Orange CCD, Volusia County, Florida",32085,4177,12423,15485,Volusia County
+Florida,2023,Sub_County,1212793159,"South Peninsula CCD, Volusia County, Florida",6690,546,2266,3878,Volusia County
+Florida,2023,Sub_County,1212990949,"East Wakulla CCD, Wakulla County, Florida",9906,639,3468,5799,Wakulla County
+Florida,2023,Sub_County,1212993627,"West Wakulla CCD, Wakulla County, Florida",2281,150,1002,1129,Wakulla County
+Florida,2023,Sub_County,1213190819,"DeFuniak Springs CCD, Walton County, Florida",5825,1285,2033,2507,Walton County
+Florida,2023,Sub_County,1213191196,"Freeport CCD, Walton County, Florida",6555,608,2153,3794,Walton County
+Florida,2023,Sub_County,1213192665,"Paxton-Darlington CCD, Walton County, Florida",4434,614,1727,2093,Walton County
+Florida,2023,Sub_County,1213192938,"Redbay CCD, Walton County, Florida",934,139,347,448,Walton County
+Florida,2023,Sub_County,1213193542,"Walton Beaches CCD, Walton County, Florida",14911,927,3098,10886,Walton County
+Florida,2023,Sub_County,1213390442,"Caryville CCD, Washington County, Florida",1322,371,374,577,Washington County
+Florida,2023,Sub_County,1213390546,"Chipley CCD, Washington County, Florida",3299,448,1361,1490,Washington County
+Florida,2023,Sub_County,1213393497,"Vernon CCD, Washington County, Florida",4661,788,1663,2210,Washington County

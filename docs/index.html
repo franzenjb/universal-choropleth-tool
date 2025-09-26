@@ -800,16 +800,40 @@
                     }
                 }
                 
-                // County detection (5-digit FIPS)
-                if (colLower.includes('county') || colLower.includes('geoid')) {
+                // County FIPS detection - be more aggressive with pattern matching
+                // Check column name patterns first
+                if (colLower.includes('county') && colLower.includes('fips')) {
+                    // Column explicitly says "County FIPS" or similar
+                    if (/^\d{5}$/.test(firstValue)) {
+                        analysis.recommendations.push({
+                            type: 'county_fips',
+                            column: col,
+                            level: 'us_counties',
+                            confidence: 'very_high',
+                            message: `"${col}" is your county FIPS column (${values.slice(0,3).join(', ')})`,
+                            detail: '✅ Perfect! These are 5-digit county FIPS codes.'
+                        });
+                    } else if (/^\d{4}$/.test(firstValue)) {
+                        // 4 digits might be missing leading zero
+                        analysis.recommendations.push({
+                            type: 'county_fips',
+                            column: col,
+                            level: 'us_counties',
+                            confidence: 'high',
+                            message: `"${col}" contains county FIPS (may need padding: ${values.slice(0,3).join(', ')})`,
+                            detail: '⚠️ These look like county FIPS but may need a leading zero'
+                        });
+                    }
+                } else if (colLower.includes('county') || colLower.includes('geoid')) {
+                    // Less specific but still county-related
                     if (/^\d{5}$/.test(firstValue)) {
                         analysis.recommendations.push({
                             type: 'county_fips',
                             column: col,
                             level: 'us_counties',
                             confidence: 'high',
-                            message: `"${col}" contains 5-digit county FIPS codes (e.g., ${values.slice(0,3).join(', ')})`,
-                            detail: 'Standard codes for US counties (state + county FIPS)'
+                            message: `"${col}" contains 5-digit county codes (e.g., ${values.slice(0,3).join(', ')})`,
+                            detail: 'Likely county FIPS codes'
                         });
                     }
                 }
@@ -828,8 +852,8 @@
                     }
                 }
                 
-                // Generic FIPS detection
-                if (colLower.includes('fips') || colLower.includes('code')) {
+                // Generic FIPS detection - ENHANCED
+                if (colLower.includes('fips') || colLower.includes('code') || colLower.includes('id')) {
                     if (/^\d+$/.test(firstValue)) {
                         const digitCount = firstValue.length;
                         if (digitCount <= 2) {
@@ -837,18 +861,36 @@
                                 type: 'state_fips',
                                 column: col,
                                 level: 'us_states',
-                                confidence: 'medium',
-                                message: `"${col}" appears to contain ${digitCount}-digit codes (e.g., ${values.slice(0,3).join(', ')})`,
-                                detail: 'Likely state FIPS codes'
+                                confidence: 'high',
+                                message: `"${col}" contains ${digitCount}-digit state codes (e.g., ${values.slice(0,3).join(', ')})`,
+                                detail: '✅ Use for state-level maps'
                             });
                         } else if (digitCount === 5) {
                             analysis.recommendations.push({
                                 type: 'county_fips',
                                 column: col,
                                 level: 'us_counties',
+                                confidence: 'high',
+                                message: `"${col}" contains 5-digit FIPS codes (e.g., ${values.slice(0,3).join(', ')})`,
+                                detail: '✅ Perfect for county-level maps!'
+                            });
+                        }
+                    }
+                }
+                
+                // FALLBACK: Any 5-digit numeric column could be county FIPS or ZIP
+                if (!colLower.includes('zip') && !colLower.includes('county') && !colLower.includes('fips')) {
+                    if (/^\d{5}$/.test(firstValue)) {
+                        // Check if it looks like ZIP (starts with 0-9) or county FIPS
+                        const allNumeric = values.every(v => /^\d{5}$/.test(String(v)));
+                        if (allNumeric) {
+                            analysis.recommendations.push({
+                                type: 'generic_5digit',
+                                column: col,
+                                level: 'us_counties',
                                 confidence: 'medium',
-                                message: `"${col}" contains 5-digit codes (e.g., ${values.slice(0,3).join(', ')})`,
-                                detail: 'Likely county FIPS codes'
+                                message: `"${col}" has 5-digit codes - could be County FIPS or ZIP (${values.slice(0,3).join(', ')})`,
+                                detail: '💡 Try US Counties first, then ZIP codes if that doesn\'t work'
                             });
                         }
                     }
