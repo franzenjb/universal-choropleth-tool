@@ -3,13 +3,32 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Free Choropleth Maker - Instant Maps from CSV</title>
+    <title>Free Choropleth Maker - Create Data Maps from CSV Files</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --sidebar-bg: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            --text-color: white;
+            --control-bg: #2a2a2a;
+            --border-color: #444;
+            --hover-bg: #333;
+            --message-bg: #1a1a1a;
+        }
+        
+        body.light-theme {
+            --sidebar-bg: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            --text-color: #212529;
+            --control-bg: white;
+            --border-color: #dee2e6;
+            --hover-bg: #f8f9fa;
+            --message-bg: white;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             height: 100vh;
@@ -18,18 +37,22 @@
             background: #0a0a0a;
         }
         
+        body.light-theme {
+            background: #f0f0f0;
+        }
+        
         /* Sidebar */
         .sidebar {
-            width: 380px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
-            color: white;
-            padding: 30px;
+            width: 420px;
+            background: var(--sidebar-bg);
+            color: var(--text-color);
+            padding: 25px;
             overflow-y: auto;
-            box-shadow: 2px 0 20px rgba(0,0,0,0.8);
+            box-shadow: 2px 0 20px rgba(0,0,0,0.3);
         }
         
         .sidebar h1 {
-            font-size: 2em;
+            font-size: 1.8em;
             margin-bottom: 10px;
             background: linear-gradient(90deg, #00d4ff, #7a5cff);
             -webkit-background-clip: text;
@@ -37,53 +60,92 @@
         }
         
         .sidebar .subtitle {
-            color: #999;
-            font-size: 0.95em;
-            margin-bottom: 25px;
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 0.9em;
+            margin-bottom: 20px;
             line-height: 1.5;
         }
         
-        .badge {
-            display: inline-block;
-            background: linear-gradient(90deg, #ff6b6b, #ff9f40);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
+        /* Help Section */
+        .help-section {
+            background: var(--control-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 20px;
-            font-weight: 600;
+        }
+        
+        .help-section h3 {
+            color: #00d4ff;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .help-section ul {
+            list-style: none;
+            font-size: 0.85em;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+        
+        .help-section li {
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .help-section li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .theme-btn {
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        
+        .theme-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: #00d4ff;
+        }
+        
+        .theme-btn.active {
+            background: linear-gradient(90deg, #00d4ff, #7a5cff);
+            border-color: transparent;
         }
         
         /* Upload Zone */
         .upload-zone {
-            border: 2px dashed #444;
+            border: 2px dashed var(--border-color);
             border-radius: 12px;
             padding: 40px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 25px;
-            background: linear-gradient(135deg, #1e1e1e, #151515);
+            margin-bottom: 20px;
+            background: var(--control-bg);
             position: relative;
             overflow: hidden;
-        }
-        
-        .upload-zone::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(90deg, #00d4ff, #7a5cff);
-            border-radius: 12px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: -1;
-        }
-        
-        .upload-zone:hover::before {
-            opacity: 0.3;
         }
         
         .upload-zone:hover {
@@ -93,7 +155,7 @@
         
         .upload-zone.has-file {
             border-color: #4caf50;
-            background: linear-gradient(135deg, #1b2b1b, #0f1f0f);
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
         }
         
         .upload-icon {
@@ -103,27 +165,37 @@
         
         /* Controls */
         .control-group {
-            margin: 25px 0;
+            margin: 20px 0;
         }
         
         .control-group label {
             display: block;
             font-size: 0.85em;
-            color: #aaa;
-            margin-bottom: 10px;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 600;
         }
         
+        .control-group .help-text {
+            font-size: 0.75em;
+            opacity: 0.6;
+            margin-top: 5px;
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        
         select {
             width: 100%;
             padding: 12px;
-            background: #2a2a2a;
-            border: 1px solid #444;
+            background: var(--control-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: white;
-            font-size: 15px;
+            color: var(--text-color);
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -137,30 +209,30 @@
         /* Column selector */
         .column-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            max-height: 200px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+            max-height: 180px;
             overflow-y: auto;
             padding: 10px;
-            background: #1a1a1a;
+            background: var(--message-bg);
             border-radius: 8px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
         
         .column-item {
-            padding: 10px;
-            background: #2a2a2a;
-            border: 1px solid #444;
+            padding: 8px;
+            background: var(--control-bg);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.9em;
+            font-size: 0.85em;
             text-align: center;
         }
         
         .column-item:hover {
-            background: #333;
-            border-color: #555;
+            background: var(--hover-bg);
+            border-color: #00d4ff;
             transform: translateY(-1px);
         }
         
@@ -196,6 +268,32 @@
         .btn-primary:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+        }
+        
+        /* Basemap selector */
+        .basemap-selector {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        
+        .basemap-selector label {
+            color: white;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .basemap-selector select {
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            padding: 8px;
+            min-width: 150px;
         }
         
         /* Map container */
@@ -250,30 +348,30 @@
         }
         
         .message.success {
-            background: #1b4332;
+            background: rgba(76, 175, 80, 0.1);
             color: #4caf50;
             border: 1px solid #4caf50;
         }
         
         .message.error {
-            background: #3d1f1f;
+            background: rgba(255, 107, 107, 0.1);
             color: #ff6b6b;
             border: 1px solid #ff6b6b;
         }
         
         .message.info {
-            background: #1f2937;
+            background: rgba(96, 165, 250, 0.1);
             color: #60a5fa;
             border: 1px solid #60a5fa;
         }
         
         /* Stats */
         .stats-box {
-            background: #1a1a1a;
+            background: var(--message-bg);
             border-radius: 8px;
             padding: 15px;
             margin: 20px 0;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
         
         .stat-row {
@@ -284,7 +382,7 @@
         }
         
         .stat-label {
-            color: #888;
+            opacity: 0.7;
         }
         
         .stat-value {
@@ -292,56 +390,82 @@
             font-weight: 600;
         }
         
-        /* Loading spinner */
-        .spinner {
-            border: 3px solid #333;
-            border-top: 3px solid #00d4ff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        /* Sample data links */
+        .sample-data {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .sample-data a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85em;
+            margin-right: 15px;
+        }
+        
+        .sample-data a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <h1>🗺️ Choropleth Maker</h1>
-        <p class="subtitle">Create beautiful data maps instantly.<br>No server, no GIS software, 100% free.</p>
-        <div class="badge">✨ WORKS OFFLINE</div>
+        <p class="subtitle">Transform your CSV data into beautiful choropleth maps instantly. No GIS software required, 100% free.</p>
+        
+        <div class="help-section">
+            <h3>📚 How to Use</h3>
+            <ul>
+                <li>Upload a CSV file with geographic data</li>
+                <li>Select the geographic level (States, Counties, ZIPs)</li>
+                <li>Choose the column that contains your geographic IDs</li>
+                <li>Pick a numeric column to visualize</li>
+                <li>Click Create Map - it's that simple!</li>
+            </ul>
+        </div>
         
         <div class="upload-zone" id="dropZone">
             <input type="file" id="csvFile" accept=".csv" hidden />
             <div class="upload-icon">📊</div>
             <p style="font-size: 1.1em; margin-bottom: 10px; font-weight: 600;">Drop CSV here</p>
-            <p style="color: #888; font-size: 0.9em;">or click to browse</p>
+            <p style="opacity: 0.7; font-size: 0.9em;">or click to browse</p>
+        </div>
+        
+        <div class="sample-data">
+            <a href="test_data/us_states_economy.csv" download>📥 Sample: US States</a>
+            <a href="test_data/texas_counties_population.csv" download>📥 Sample: Counties</a>
         </div>
         
         <div id="controlsContainer" style="display: none;">
             <div class="control-group">
-                <label>Geographic Level</label>
+                <label>
+                    Geographic Level
+                    <div class="help-text">What type of boundaries does your data represent?</div>
+                </label>
                 <select id="geoLevel">
                     <option value="">Select level...</option>
-                    <option value="us_states">US States</option>
-                    <option value="us_counties">US Counties</option>
-                    <option value="sample_zctas">Sample ZIP Codes</option>
+                    <option value="us_states">US States (FIPS codes or abbreviations)</option>
+                    <option value="us_counties">US Counties (5-digit GEOID)</option>
+                    <option value="sample_zctas">Sample ZIP Codes (limited demo)</option>
                 </select>
             </div>
             
             <div class="control-group">
-                <label>Join Column (in your CSV)</label>
+                <label>
+                    Join Column
+                    <div class="help-text">Which column contains your geographic IDs?</div>
+                </label>
                 <select id="joinColumn">
                     <option value="">Select column...</option>
                 </select>
             </div>
             
             <div class="control-group">
-                <label>Data Column to Visualize</label>
+                <label>
+                    Data to Visualize
+                    <div class="help-text">Select a numeric column to map</div>
+                </label>
                 <div class="column-grid" id="dataColumns"></div>
             </div>
             
@@ -374,15 +498,53 @@
     
     <div id="map"></div>
     
+    <!-- Map controls -->
+    <div class="theme-toggle">
+        <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+    </div>
+    
+    <div class="basemap-selector">
+        <label>Basemap Style</label>
+        <select id="basemapSelect" onchange="changeBasemap()">
+            <option value="dark">Dark (CARTO)</option>
+            <option value="light">Light (CARTO)</option>
+            <option value="osm">OpenStreetMap</option>
+            <option value="satellite">Satellite (ESRI)</option>
+            <option value="topo">Topographic</option>
+        </select>
+    </div>
+    
     <script>
         // Initialize map
         const map = L.map('map').setView([39.8, -98.5], 4);
         
-        // Dark basemap
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-            attribution: '© CARTO',
-            maxZoom: 19
-        }).addTo(map);
+        // Basemap options
+        const basemaps = {
+            dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+                attribution: '© CARTO',
+                maxZoom: 19
+            }),
+            light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+                attribution: '© CARTO',
+                maxZoom: 19
+            }),
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }),
+            satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© ESRI',
+                maxZoom: 19
+            }),
+            topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenTopoMap',
+                maxZoom: 17
+            })
+        };
+        
+        // Set initial basemap
+        let currentBasemap = basemaps.dark;
+        currentBasemap.addTo(map);
         
         // Global variables
         let csvData = null;
@@ -390,15 +552,38 @@
         let currentLayer = null;
         let metadata = null;
         let selectedDataColumn = null;
+        let csvLookup = {};
+        
+        // Theme toggle
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            if (document.body.classList.contains('light-theme')) {
+                changeBasemap('light');
+                document.getElementById('basemapSelect').value = 'light';
+            } else {
+                changeBasemap('dark');
+                document.getElementById('basemapSelect').value = 'dark';
+            }
+        }
+        
+        // Change basemap
+        function changeBasemap(style) {
+            const selectedStyle = style || document.getElementById('basemapSelect').value;
+            if (currentBasemap) {
+                map.removeLayer(currentBasemap);
+            }
+            currentBasemap = basemaps[selectedStyle];
+            currentBasemap.addTo(map);
+        }
         
         // Load metadata on startup
         async function loadMetadata() {
             try {
                 const response = await fetch('boundaries/metadata.json');
                 metadata = await response.json();
-                showMessage('Ready! Upload a CSV file to begin.', 'info');
+                showMessage('Ready! Upload a CSV file to begin. Try our sample data below the upload box.', 'info');
             } catch (error) {
-                showMessage('Error loading metadata. Please refresh the page.', 'error');
+                showMessage('Error loading boundary data. Please refresh the page.', 'error');
             }
         }
         
@@ -412,14 +597,16 @@
             dropZone.style.borderColor = '#00d4ff';
         });
         dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = '#444';
+            dropZone.style.borderColor = '';
         });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = '#444';
+            dropZone.style.borderColor = '';
             const file = e.dataTransfer.files[0];
-            if (file && file.type === 'text/csv') {
+            if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
                 processCSV(file);
+            } else {
+                showMessage('Please upload a CSV file', 'error');
             }
         });
         
@@ -434,11 +621,18 @@
         function processCSV(file) {
             Papa.parse(file, {
                 header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
                 complete: function(results) {
-                    csvData = results.data.filter(row => Object.values(row).some(v => v));
+                    if (results.errors.length > 0) {
+                        showMessage(`CSV parsing warning: ${results.errors[0].message}`, 'error');
+                        return;
+                    }
+                    
+                    csvData = results.data.filter(row => Object.values(row).some(v => v !== null && v !== ''));
                     
                     if (csvData.length === 0) {
-                        showMessage('CSV file is empty', 'error');
+                        showMessage('CSV file is empty or invalid', 'error');
                         return;
                     }
                     
@@ -446,13 +640,13 @@
                     dropZone.innerHTML = `
                         <div class="upload-icon">✅</div>
                         <p style="font-size: 1.1em; font-weight: 600;">File Loaded!</p>
-                        <p style="color: #888; font-size: 0.9em;">${file.name}</p>
-                        <p style="color: #00d4ff; font-size: 0.85em; margin-top: 10px;">${csvData.length} rows</p>
+                        <p style="opacity: 0.7; font-size: 0.9em;">${file.name}</p>
+                        <p style="color: #00d4ff; font-size: 0.85em; margin-top: 10px;">${csvData.length} rows • ${Object.keys(csvData[0]).length} columns</p>
                     `;
                     
                     populateControls();
                     document.getElementById('controlsContainer').style.display = 'block';
-                    showMessage(`Loaded ${csvData.length} rows from CSV`, 'success');
+                    showMessage(`Loaded ${csvData.length} rows. Now select your geographic level and columns.`, 'success');
                 },
                 error: function(error) {
                     showMessage('Error parsing CSV: ' + error.message, 'error');
@@ -467,12 +661,32 @@
             // Populate join column dropdown
             const joinSelect = document.getElementById('joinColumn');
             joinSelect.innerHTML = '<option value="">Select column...</option>';
+            
+            // Try to auto-detect common geographic columns
+            const geoPatterns = ['fips', 'geoid', 'state', 'county', 'zip', 'zcta', 'code', 'id'];
+            let suggestedColumn = null;
+            
             columns.forEach(col => {
                 const option = document.createElement('option');
                 option.value = col;
-                option.textContent = col;
+                
+                const colLower = col.toLowerCase();
+                const isLikelyGeo = geoPatterns.some(pattern => colLower.includes(pattern));
+                
+                if (isLikelyGeo && !suggestedColumn) {
+                    suggestedColumn = col;
+                    option.textContent = col + ' ⭐';
+                } else {
+                    option.textContent = col;
+                }
+                
                 joinSelect.appendChild(option);
             });
+            
+            // Auto-select suggested column
+            if (suggestedColumn) {
+                joinSelect.value = suggestedColumn;
+            }
             
             // Populate data columns grid
             const dataColumnsDiv = document.getElementById('dataColumns');
@@ -480,10 +694,13 @@
             
             columns.forEach(col => {
                 // Check if column has numeric data
-                const sample = csvData.slice(0, 10).map(row => parseFloat(row[col]));
-                const hasNumbers = sample.some(v => !isNaN(v));
+                const sample = csvData.slice(0, Math.min(10, csvData.length));
+                const numericValues = sample.map(row => {
+                    const val = row[col];
+                    return typeof val === 'number' ? val : parseFloat(val);
+                }).filter(v => !isNaN(v));
                 
-                if (hasNumbers) {
+                if (numericValues.length > sample.length / 2) { // At least half are numbers
                     const div = document.createElement('div');
                     div.className = 'column-item';
                     div.textContent = col;
@@ -492,6 +709,10 @@
                     dataColumnsDiv.appendChild(div);
                 }
             });
+            
+            if (dataColumnsDiv.children.length === 0) {
+                dataColumnsDiv.innerHTML = '<div style="padding: 20px; opacity: 0.6;">No numeric columns found in your CSV</div>';
+            }
             
             checkReadyToCreate();
         }
@@ -531,42 +752,67 @@
             const geoLevel = document.getElementById('geoLevel').value;
             const joinColumn = document.getElementById('joinColumn').value;
             
-            showMessage('Loading boundaries...', 'info');
+            showMessage('Creating your map...', 'info');
             
             try {
                 // Load boundary data if not already loaded
                 if (!boundaries[geoLevel]) {
                     const boundaryInfo = metadata.boundaries[geoLevel];
+                    if (!boundaryInfo) {
+                        showMessage('Geographic level not available', 'error');
+                        return;
+                    }
                     const response = await fetch(`boundaries/${boundaryInfo.file}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to load boundary data');
+                    }
                     boundaries[geoLevel] = await response.json();
                 }
                 
                 const boundaryData = boundaries[geoLevel];
                 const idField = metadata.boundaries[geoLevel].id_field;
                 
-                // Create lookup for CSV data
-                const csvLookup = {};
+                // Create lookup for CSV data with better matching
+                csvLookup = {};
                 let joinKeys = [];
+                
                 csvData.forEach(row => {
-                    // Handle both numeric FIPS (01, 02) and string values
-                    let key = String(row[joinColumn]).trim();
-                    // Pad single digit FIPS codes with leading zero
-                    if (/^\d+$/.test(key) && key.length === 1) {
-                        key = '0' + key;
+                    const rawKey = row[joinColumn];
+                    if (rawKey === null || rawKey === undefined || rawKey === '') return;
+                    
+                    // Handle different key formats
+                    let key = String(rawKey).trim();
+                    
+                    // For FIPS codes, ensure 2-digit padding for states, 5-digit for counties
+                    if (/^\d+$/.test(key)) {
+                        if (geoLevel === 'us_states' && key.length <= 2) {
+                            key = key.padStart(2, '0');
+                        } else if (geoLevel === 'us_counties' && key.length <= 5) {
+                            key = key.padStart(5, '0');
+                        }
                     }
+                    
                     joinKeys.push(key);
                     const value = parseFloat(row[selectedDataColumn]);
+                    
                     if (!isNaN(value)) {
+                        // Store multiple versions for flexible matching
                         csvLookup[key] = value;
-                        // Also store uppercase version for matching
                         csvLookup[key.toUpperCase()] = value;
+                        csvLookup[key.toLowerCase()] = value;
                     }
                 });
                 
+                if (Object.keys(csvLookup).length === 0) {
+                    showMessage(`No valid numeric data found in column "${selectedDataColumn}"`, 'error');
+                    return;
+                }
+                
                 // Calculate data range
                 const values = Object.values(csvLookup);
-                const minValue = Math.min(...values);
-                const maxValue = Math.max(...values);
+                const uniqueValues = [...new Set(values)];
+                const minValue = Math.min(...uniqueValues);
+                const maxValue = Math.max(...uniqueValues);
                 
                 // Create color scale
                 const colorScale = chroma.scale(['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'])
@@ -578,7 +824,9 @@
                     // Try different key formats for matching
                     let value = csvLookup[id] || 
                                csvLookup[String(id).toUpperCase()] || 
-                               csvLookup[String(id).padStart(2, '0')];
+                               csvLookup[String(id).toLowerCase()] ||
+                               csvLookup[String(id).padStart(2, '0')] ||
+                               csvLookup[String(id).padStart(5, '0')];
                     
                     if (value !== undefined) {
                         return {
@@ -615,7 +863,9 @@
                         // Try multiple formats for matching
                         let value = csvLookup[id] || 
                                    csvLookup[String(id).toUpperCase()] || 
-                                   csvLookup[String(id).padStart(2, '0')];
+                                   csvLookup[String(id).toLowerCase()] ||
+                                   csvLookup[String(id).padStart(2, '0')] ||
+                                   csvLookup[String(id).padStart(5, '0')];
                         
                         const name = feature.properties.NAME || feature.properties.ABBR || id;
                         
@@ -665,25 +915,21 @@
                     }
                 }).addTo(map);
                 
-                // Smart zoom: fit to features with data, or all features if none match
+                // Smart zoom: fit to features with data
                 if (featuresWithData.length > 0) {
                     const group = new L.featureGroup(featuresWithData);
                     const bounds = group.getBounds();
-                    // Add more padding for small areas like county groups
                     map.fitBounds(bounds.pad(0.2));
                     
-                    // If it's a small area (like a few counties), zoom out a bit
+                    // Prevent over-zooming for small areas
                     setTimeout(() => {
                         const currentZoom = map.getZoom();
                         if (currentZoom > 8 && featuresWithData.length < 20) {
                             map.setZoom(8);
                         }
                     }, 100);
-                    
-                    console.log(`Zoomed to ${featuresWithData.length} features with data`);
                 } else {
                     map.fitBounds(currentLayer.getBounds());
-                    console.log('No features with data found, showing all boundaries');
                 }
                 
                 // Create legend
@@ -691,16 +937,15 @@
                 
                 // Count actual matches
                 let matchedCount = 0;
-                let unmatchedBoundaries = [];
                 boundaryData.features.forEach(feature => {
                     const id = feature.properties[idField];
                     const value = csvLookup[id] || 
                                  csvLookup[String(id).toUpperCase()] || 
-                                 csvLookup[String(id).padStart(2, '0')];
+                                 csvLookup[String(id).toLowerCase()] ||
+                                 csvLookup[String(id).padStart(2, '0')] ||
+                                 csvLookup[String(id).padStart(5, '0')];
                     if (value !== undefined) {
                         matchedCount++;
-                    } else {
-                        unmatchedBoundaries.push(id);
                     }
                 });
                 
@@ -708,25 +953,28 @@
                 const features = boundaryData.features.length;
                 
                 document.getElementById('statFeatures').textContent = features.toLocaleString();
-                document.getElementById('statMin').textContent = minValue.toLocaleString();
-                document.getElementById('statMax').textContent = maxValue.toLocaleString();
+                document.getElementById('statMin').textContent = minValue.toLocaleString(undefined, {
+                    maximumFractionDigits: 2
+                });
+                document.getElementById('statMax').textContent = maxValue.toLocaleString(undefined, {
+                    maximumFractionDigits: 2
+                });
                 document.getElementById('statMatched').textContent = `${matchedCount}/${features}`;
                 document.getElementById('statsBox').style.display = 'block';
                 
+                // Provide helpful feedback
                 if (matchedCount === 0) {
-                    console.log('No matches found. CSV keys:', joinKeys.slice(0, 5));
-                    console.log('Boundary IDs:', boundaryData.features.slice(0, 5).map(f => f.properties[idField]));
-                    showMessage(`No data matched! Check that your join column (${joinColumn}) matches the geographic level.`, 'error');
+                    showMessage(`No data matched! Make sure your "${joinColumn}" column contains valid ${geoLevel === 'us_states' ? 'state FIPS codes or abbreviations' : geoLevel === 'us_counties' ? 'county GEOIDs (5-digit codes)' : 'geographic IDs'}.`, 'error');
                 } else if (features > 100 && matchedCount < 50) {
-                    // Likely showing subset of counties/zips on national map
-                    showMessage(`Success! Showing ${matchedCount} areas with data. Map zoomed to your data region.`, 'success');
+                    showMessage(`Success! Showing ${matchedCount} areas with data. The map has zoomed to your data region.`, 'success');
                 } else if (matchedCount < features / 2) {
-                    showMessage(`Map created! ${matchedCount}/${features} features matched.`, 'info');
+                    showMessage(`Map created! ${matchedCount} of ${features} areas matched. Unmatched areas shown in gray.`, 'info');
                 } else {
-                    showMessage(`Map created! ${matchedCount} features matched.`, 'success');
+                    showMessage(`Perfect! ${matchedCount} areas mapped successfully.`, 'success');
                 }
                 
             } catch (error) {
+                console.error('Map creation error:', error);
                 showMessage('Error creating map: ' + error.message, 'error');
             }
         }
@@ -811,7 +1059,6 @@
             }
             
             const geoLevel = document.getElementById('geoLevel').value;
-            const joinColumn = document.getElementById('joinColumn').value;
             
             // Create enriched GeoJSON with data values
             const exportData = {
@@ -826,7 +1073,9 @@
                 // Get the data value
                 const value = csvLookup[id] || 
                              csvLookup[String(id).toUpperCase()] || 
-                             csvLookup[String(id).padStart(2, '0')];
+                             csvLookup[String(id).toLowerCase()] ||
+                             csvLookup[String(id).padStart(2, '0')] ||
+                             csvLookup[String(id).padStart(5, '0')];
                 
                 // Clone the feature and add the data value
                 const exportFeature = JSON.parse(JSON.stringify(feature));
@@ -849,7 +1098,7 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
             
-            showMessage('GeoJSON exported! Import into ArcGIS Pro using "JSON to Features" tool.', 'success');
+            showMessage('✅ GeoJSON exported! Use "JSON to Features" tool in ArcGIS Pro to import.', 'success');
         }
         
         // Show message
@@ -865,7 +1114,7 @@
                 setTimeout(() => {
                     message.style.opacity = '0';
                     setTimeout(() => message.remove(), 300);
-                }, 3000);
+                }, 5000);
             }
         }
         
