@@ -267,5 +267,5 @@ el('downloadBtn').addEventListener('click', ()=>{
   if (!joinedGeoJSON) return;
   const outName = `${statePick||'US'}_${levelPick}_joined.geojson`;
   download(outName, JSON.stringify(joinedGeoJSON));
-  el('resultInfo').textContent = `Downloaded ${outName}. Now upload to ArcGIS and color by “Below_ALICE_Rate”.`;
+  el('resultInfo').textContent = `Downloaded ${outName}. Now upload to ArcGIS and style by your data columns.`;
 });

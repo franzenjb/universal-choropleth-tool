@@ -312,12 +312,12 @@ def main(argv=None) -> int:
     abbr, fips = normalize_state(args.state)
 
     global INSECURE
-    INSECURE = bool(args.insecure or os.environ.get('ALICE_INSECURE'))
+    INSECURE = bool(args.insecure or os.environ.get('CHOROPLETH_INSECURE'))
     global CACHE_DIR, OFFLINE, MAX_RETRIES, RETRY_WAIT
-    CACHE_DIR = args.cache_dir or os.environ.get('ALICE_CACHE_DIR')
-    OFFLINE = bool(args.offline or os.environ.get('ALICE_OFFLINE'))
-    MAX_RETRIES = int(os.environ.get('ALICE_MAX_RETRIES', args.max_retries))
-    RETRY_WAIT = float(os.environ.get('ALICE_RETRY_WAIT', args.retry_wait))
+    CACHE_DIR = args.cache_dir or os.environ.get('CHOROPLETH_CACHE_DIR')
+    OFFLINE = bool(args.offline or os.environ.get('CHOROPLETH_OFFLINE'))
+    MAX_RETRIES = int(os.environ.get('CHOROPLETH_MAX_RETRIES', args.max_retries))
+    RETRY_WAIT = float(os.environ.get('CHOROPLETH_RETRY_WAIT', args.retry_wait))
 
     if args.level == 'place':
         gdf = prepare_place(abbr, fips, args.csv)

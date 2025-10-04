@@ -570,9 +570,9 @@
                 <h3>⚠️ Backend API Required</h3>
                 <p>To use this tool, you need to run the backend API locally:</p>
                 <ol>
-                    <li>Clone the repository:<br><code>git clone https://github.com/franzenjb/alice-choropleth-tool.git</code></li>
+                    <li>Clone the repository:<br><code>git clone https://github.com/franzenjb/universal-choropleth-tool.git</code></li>
                     <li>Install dependencies:<br><code>pip install fastapi uvicorn geopandas python-multipart</code></li>
-                    <li>Run the API:<br><code>ALICE_CORS_ALLOW_ALL=1 python tools/local_api.py</code></li>
+                    <li>Run the API:<br><code>CHOROPLETH_CORS_ALLOW_ALL=1 python tools/local_api.py</code></li>
                 </ol>
                 <p>The API will start on <code>http://127.0.0.1:8765</code></p>
                 <button onclick="sessionStorage.setItem('apiNoticeShown', 'true'); this.parentElement.remove()">✕ Close</button>

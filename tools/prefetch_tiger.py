@@ -77,7 +77,7 @@ def parse_args():
 def main() -> int:
     args = parse_args()
     dest = args.cache_dir
-    insecure = args.insecure or bool(os.environ.get('ALICE_INSECURE'))
+    insecure = args.insecure or bool(os.environ.get('CHOROPLETH_INSECURE'))
     max_retries = args.max_retries
     retry_wait = args.retry_wait
 

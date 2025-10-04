@@ -24,7 +24,7 @@ STATE_ABBR_TO_FIPS = {
     'PR': '72','VI': '78','UM': '74'
 }
 
-CACHE_DIR = os.environ.get('ALICE_CACHE_DIR', os.path.expanduser('~/data/tiger/GENZ'))
+CACHE_DIR = os.environ.get('CHOROPLETH_CACHE_DIR', os.path.expanduser('~/data/tiger/GENZ'))
 PARQUET_DIR = os.path.join(CACHE_DIR, 'parquet')
 try:
     import pyarrow  # noqa: F401
@@ -235,7 +235,7 @@ def compute_rates(df: pd.DataFrame) -> None:
 app = FastAPI(title='Local Boundary & Join API')
 
 # Permissive CORS during development if env set
-ALLOW_ALL = bool(os.environ.get('ALICE_CORS_ALLOW_ALL'))
+ALLOW_ALL = bool(os.environ.get('CHOROPLETH_CORS_ALLOW_ALL'))
 if ALLOW_ALL:
     app.add_middleware(
         CORSMiddleware,

@@ -6,11 +6,11 @@ What this does
 - Two ways to use it: Web UI (easiest) or CLI (power users).
 
 Quickest path (Web UI)
-1) Open the live page: https://franzenjb.github.io/alice-choropleth-tool/
+1) Open the live page: https://franzenjb.github.io/universal-choropleth-tool/
 2) Upload your CSV.
 3) Pick your state and area type (ZIP, county, etc.).
 4) Use a provided boundary or (optionally) upload one.
-5) Click “Create My Map” and download the GeoJSON.
+5) Click "Create My Map" and download the GeoJSON.
 
 Optional: Local App (no CORS/mixed content)
 1) Double‑click: `Start Local App.command`
@@ -19,18 +19,18 @@ Optional: Local App (no CORS/mixed content)
    - To stop the engine: `Stop Local Engine.command`.
 
 CLI (offline batch runs)
-1) `cd "/Users/jefffranzen/Desktop/alice-choropleth-tool" && python3 -m venv .venv && source .venv/bin/activate`
+1) `cd "/Users/jefffranzen/Desktop/universal-choropleth-tool" && python3 -m venv .venv && source .venv/bin/activate`
 2) `pip install geopandas pyogrio shapely pyproj fiona requests pandas`
-3) `export ALICE_CACHE_DIR=~/data/tiger/GENZ && export ALICE_OFFLINE=1`
+3) `export CHOROPLETH_CACHE_DIR=~/data/tiger/GENZ && export CHOROPLETH_OFFLINE=1`
 4) Example (Florida county‑subdivision):
    ```
-   python tools/alice_choropleth.py \
+   python tools/choropleth.py \
      --level subcounty --state FL \
-     --csv "/Users/jefffranzen/Desktop/Alice Florida Data/ALICE - Florida Sub_County Data.csv" \
+     --csv "/Users/you/Desktop/Data/Florida_Sub_County_Data.csv" \
      --out out/fl_subcounty.geojson --simplify 0.0005
    ```
 
 Troubleshooting
 - Pages 404 after push: wait 1–3 minutes and refresh.
-- Local Engine not detected: make sure `tools/local_api.py` is running and `ALICE_CACHE_DIR` is set.
-- ZIP vs ZCTA mismatches: Some ZIPs don’t map to ZCTAs; expect some nulls.
+- Local Engine not detected: make sure `tools/local_api.py` is running and `CHOROPLETH_CACHE_DIR` is set.
+- ZIP vs ZCTA mismatches: Some ZIPs don't map to ZCTAs; expect some nulls.

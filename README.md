@@ -1,10 +1,10 @@
-# ALICE Choropleth Tool
+# Universal Choropleth Tool
 
-CLI + browser UI to join ALICE CSVs with Census TIGER/Cartographic boundaries and export GeoJSON for ArcGIS (no credits).
+CLI + browser UI to join any CSV with Census TIGER/Cartographic boundaries and export GeoJSON for ArcGIS (no credits).
 
 ## Features
 - Place, Sub-County (county subdivisions), and ZCTA joins
-- Auto-computed rates: Below_ALICE_Rate, ALICE_Rate, Poverty_Rate
+- Auto-computed rates from CSV data columns
 - Local cache + offline mode (no runtime calls to Census once cached)
 - Resilient downloader with retries/backoff
 - GeoParquet conversion for fast local I/O
@@ -14,20 +14,20 @@ CLI + browser UI to join ALICE CSVs with Census TIGER/Cartographic boundaries an
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install geopandas pyogrio shapely pyproj fiona requests pandas
-export ALICE_CACHE_DIR=~/data/tiger/GENZ
-export ALICE_OFFLINE=1
+export CHOROPLETH_CACHE_DIR=~/data/tiger/GENZ
+export CHOROPLETH_OFFLINE=1
 
 # Example (Florida Sub-County):
-python tools/alice_choropleth.py \
+python tools/choropleth.py \
   --level subcounty --state FL \
-  --csv "/Users/you/Desktop/Alice Florida Data/ALICE - Florida Sub_County Data.csv" \
+  --csv "/Users/you/Desktop/Data/Florida_Sub_County_Data.csv" \
   --out out/fl_subcounty.geojson --simplify 0.0005 \
-  --cache-dir "$ALICE_CACHE_DIR" --offline
+  --cache-dir "$CHOROPLETH_CACHE_DIR" --offline
 ```
 
 ## Prefetch Super-Base
 ```bash
-python tools/prefetch_tiger.py --cache-dir "$ALICE_CACHE_DIR" --until-complete --max-retries 12 --retry-wait 3
+python tools/prefetch_tiger.py --cache-dir "$CHOROPLETH_CACHE_DIR" --until-complete --max-retries 12 --retry-wait 3
 ```
 - Downloads: US places, ZCTA (2020), US states/counties, all per-state county subdivisions + tracts
 - Add block groups for selected states: `--bg-states FL,GA,SC,NC,TN,AL,MS`
@@ -36,7 +36,7 @@ python tools/prefetch_tiger.py --cache-dir "$ALICE_CACHE_DIR" --until-complete -
 ## Convert to GeoParquet
 ```bash
 pip install pyarrow
-python tools/convert_cache_to_parquet.py --cache-dir "$ALICE_CACHE_DIR"
+python tools/convert_cache_to_parquet.py --cache-dir "$CHOROPLETH_CACHE_DIR"
 ```
 - Optional `--glob` to limit, e.g., `"*_bg_500k.zip"`
 
